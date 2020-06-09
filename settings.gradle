@@ -1,0 +1,3 @@
+rootProject.name='Searchable Paging'
+include ':app'
+include ':searchablepaging'
