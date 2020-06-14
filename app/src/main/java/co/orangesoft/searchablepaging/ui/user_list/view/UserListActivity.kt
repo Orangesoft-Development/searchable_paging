@@ -29,7 +29,7 @@ class UserListActivity : BaseActivity<UserListMvpView, UserListPresenter>(), Use
     override fun initViews() {
 
         floatingActionButton.setOnClickListener {
-            presenter.pagedListLiveData.value?.let {
+            presenter.getPagedListLiveData().value?.let {
                 val newUser = it[0]?.copy(id = 2, login = "NEW TEST USER")
                 newUser?.let { user -> presenter.addNewUser(user) }
             }
@@ -39,6 +39,6 @@ class UserListActivity : BaseActivity<UserListMvpView, UserListPresenter>(), Use
             layoutManager = LinearLayoutManager(this@UserListActivity)
             adapter = userPagedListAdapter
         }
-        presenter.pagedListLiveData.observe(this, Observer { userPagedListAdapter.submitList(it) })
+        presenter.getPagedListLiveData().observe(this, Observer { userPagedListAdapter.submitList(it) })
     }
 }

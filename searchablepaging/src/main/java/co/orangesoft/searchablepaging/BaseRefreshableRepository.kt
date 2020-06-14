@@ -53,7 +53,7 @@ abstract class BaseRefreshableRepository<DB, API>(
         }
     }
 
-    private val pagedConfig: PagedList.Config by lazy {
+    val pagedConfig: PagedList.Config by lazy {
         PagedList.Config.Builder()
                 .setPageSize(PAGE_SIZE)
                 .setPrefetchDistance(DISTANCE)
@@ -61,7 +61,7 @@ abstract class BaseRefreshableRepository<DB, API>(
                 .build()
     }
 
-    private val pagedItems: LiveData<PagedList<DB>> by lazy {
+    val pagedItems: LiveData<PagedList<DB>> by lazy {
         LivePagedListBuilder(datasource, pagedConfig)
                 .setBoundaryCallback(callback)
                 .setInitialLoadKey(PAGE)

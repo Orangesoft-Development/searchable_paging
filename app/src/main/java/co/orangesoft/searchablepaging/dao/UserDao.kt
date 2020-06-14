@@ -3,10 +3,11 @@ package co.orangesoft.searchablepaging.dao
 import androidx.lifecycle.LiveData
 import androidx.paging.DataSource
 import androidx.room.*
+import by.orangesoft.paging.SearchableDao
 import co.orangesoft.searchablepaging.models.User
 
 @Dao
-abstract class UserDao {
+abstract class UserDao: SearchableDao {
 
     @Transaction
     open suspend fun setNewUsers(users: List<User>) {
