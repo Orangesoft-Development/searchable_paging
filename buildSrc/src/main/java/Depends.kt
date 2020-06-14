@@ -145,5 +145,11 @@ object Depends {
         const val videoAndroid = "org.jcodec:jcodec-android:0.2.3"
     }
 
+    object Koin {
+        const val koinAndroid = "org.koin:koin-android:${Versions.koin}"
+        const val koinAndroidScope = "org.koin:koin-android-scope:${Versions.koin}"
+        const val koinAndroidViewModel = "org.koin:koin-android-viewmodel:${Versions.koin}"
+    }
+
     const val lokalise = "com.lokalise.android:sdk:${Versions.lokalise}"
 }

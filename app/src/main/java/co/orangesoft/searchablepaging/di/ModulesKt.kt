@@ -1,0 +1,50 @@
+package co.orangesoft.searchablepaging.di
+
+import co.orangesoft.searchablepaging.api.ApiModuleImpl
+import co.orangesoft.searchablepaging.repositories.AppDatabaseRepository
+import co.orangesoft.searchablepaging.repositories.UserApiRepository
+import co.orangesoft.searchablepaging.ui.main.presenter.MainPresenter
+import co.orangesoft.searchablepaging.ui.main.view.MainActivity
+import co.orangesoft.searchablepaging.ui.user_list.presenter.UserListPresenter
+import co.orangesoft.searchablepaging.ui.user_list.view.UserListActivity
+import org.koin.android.ext.koin.androidApplication
+import org.koin.android.viewmodel.dsl.viewModel
+import org.koin.core.module.Module
+import org.koin.core.qualifier.named
+import org.koin.core.scope.ScopeID
+import org.koin.dsl.module
+
+private val apiModule: Module = module {
+    single { ApiModuleImpl().apiService }
+}
+
+private val databaseModule: Module = module {
+    single {  AppDatabaseRepository.buildDatabase(androidApplication()) }
+}
+
+
+val mainModule = module {
+    scope(named<MainActivity>()) {
+        scoped { UserApiRepository(apiService = get()) }
+    }
+
+    viewModel { (scopeId : ScopeID) -> MainPresenter(
+        app = androidApplication(),
+        userApiRepository = getScope(scopeId).get(),
+        appDatabaseRepository = getScope(scopeId).get()
+    )}
+}
+
+val userListModule = module {
+    scope(named<UserListActivity>()) {
+        scoped { UserApiRepository(apiService = get()) }
+    }
+
+    viewModel { (scopeId : ScopeID) -> UserListPresenter(
+        app = androidApplication(),
+        userApiRepository = getScope(scopeId).get(),
+        appDatabaseRepository = getScope(scopeId).get()
+    )}
+}
+
+val koinModules: List<Module> = listOf(apiModule, databaseModule, mainModule, userListModule)

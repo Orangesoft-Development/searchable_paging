@@ -9,9 +9,7 @@ plugins {
     kotlin("kapt")
     kotlin("android.extensions")
     id("androidx.navigation.safeargs")
-    id("io.fabric")
     id("com.github.ben-manes.versions")
-    id("com.google.gms.google-services")
 
 }
 
@@ -66,34 +64,16 @@ android {
         isExperimental = true
     }
 
-
-    signingConfigs {
-        create("release") {
-            storeFile = rootProject.file("app/streamvision.jks")
-            storePassword = "orangesoft"
-            keyAlias = "streamvision"
-            keyPassword = "orangesoftstreamvision"
-        }
-        getByName("debug").apply {
-            storeFile = rootProject.file("app/debug.keystore")
-            storePassword = "android"
-            keyAlias = "androiddebugkey"
-            keyPassword = "android"
-        }
-    }
-
     buildTypes {
 
         getByName("debug") {
             isDebuggable = true
-            signingConfig = signingConfigs.getByName("debug")
         }
 
         getByName("release") {
             isShrinkResources = true
             isMinifyEnabled = true
             isDebuggable = false
-            signingConfig = signingConfigs.getByName("release")
             proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
         }
 
@@ -146,7 +126,11 @@ dependencies {
     implementation(Depends.Api.core)
     implementation(Depends.Api.kotlin)
     implementation(Depends.Api.okhttp)
+    implementation(Depends.Api.converter)
+    implementation(Depends.Api.adapters)
     kapt(Depends.Api.codegen)
+    implementation(Depends.Api.retrofit)
+    implementation(Depends.Api.logging)
 
     implementation(Depends.Image.core)
     implementation(Depends.Image.plugin)
@@ -165,8 +149,6 @@ dependencies {
     kapt(Depends.DiPlugins.processor)
 
     implementation(Depends.Misc.discreteScrollView)
-    implementation(Depends.Analytics.firebase)
-    implementation(Depends.Analytics.crashlytics)
 
     implementation(Depends.Misc.charts)
     implementation(Depends.Misc.easyPopUps)
@@ -181,6 +163,14 @@ dependencies {
 
     implementation(Depends.Worker.worker)
     implementation(Depends.Worker.workerKtx)
+
+    implementation(Depends.Koin.koinAndroid)
+    implementation(Depends.Koin.koinAndroidScope)
+    implementation(Depends.Koin.koinAndroidViewModel)
+
+    api(Depends.Database.runtime)
+    implementation(Depends.Database.ktx)
+    kapt(Depends.DatabasePlugin.plugin)
 
     implementation(Depends.lokalise) {
         isTransitive = true

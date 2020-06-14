@@ -55,4 +55,13 @@ object Versions {
     const val worker = "2.3.4"
 
     const val lokalise = "2.0.0-beta-6"
+
+    const val jetpack               = "1.0.2"
+    const val recyclerView          = "1.0.0"
+    const val lifecycleExtensions   = "2.1.0"
+    const val googleMaterial        = "1.1.0-alpha10"
+    const val koin                  = "2.0.1"
+    const val okHttp3               = "3.14.2"
+    const val loggingInterceptor    = "3.12.1"
+    const val glideOkHttp3          = "4.8.0"
 }
