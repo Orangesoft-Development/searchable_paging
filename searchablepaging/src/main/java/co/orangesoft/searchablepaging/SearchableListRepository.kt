@@ -1,5 +1,6 @@
 package by.orangesoft.paging
 
+import co.orangesoft.searchablepaging.SearchParamModel
 import kotlinx.coroutines.Job
 import java.lang.StringBuilder
 
@@ -22,6 +23,8 @@ abstract class SearchableListRepository<DB, API>  constructor(
                 queryString.append("%' OR ${query.first} LIKE '%$it")
         }
 
+        queries.add(SearchParamModel(query.first, query.second))
+
         super.setQuery(query.first to queryString.toString(), false)
     }
 
@@ -40,5 +43,9 @@ abstract class SearchableListRepository<DB, API>  constructor(
             ArrayList()
         else
             it
+    }
+
+    fun clearQueries() {
+        queries.clear()
     }
 }

@@ -3,6 +3,7 @@ package co.orangesoft.searchablepaging.repositories
 import by.orangesoft.paging.SearchableDao
 import by.orangesoft.paging.SearchableDataSourceFactory
 import by.orangesoft.paging.SearchableListRepository
+import co.orangesoft.searchablepaging.SearchParamModel
 import co.orangesoft.searchablepaging.api.ApiService
 import co.orangesoft.searchablepaging.dao.UserDao
 import co.orangesoft.searchablepaging.models.User
@@ -13,39 +14,27 @@ class TestPagingRepository(val apiService: ApiService, factory: SearchableDataSo
 
     private val dao: UserDao by lazy { datasource.dao as UserDao }
 
+    override val PAGE_SIZE = 5
+
+    companion object {
+        const val KEY_LOGIN = "login"
+        const val KEY_FOLLOWERS = "followers"
+    }
+
     override fun validateQueryKey(key: String): Boolean {
-//        return when(key){
-//            KEY_DEVICE -> true
-//            KEY_TYPE -> true
-//            else -> false
-//        }
-        return true
+        return when(key) {
+            KEY_LOGIN -> true
+            KEY_FOLLOWERS -> true
+            else -> false
+        }
     }
 
-    override suspend fun loadData(page: Int, limit: Int): List<User> {
-//        var devices = getQueries(KEY_DEVICE).let {
-//            if(it.isEmpty())
-//                null
-//            else
-//                it
-//        }
-//        var types = getQueries(KEY_TYPE).let {
-//            if(it.isEmpty())
-//                null
-//            else
-//                it[0]
-//        }
-
-//        return apiService.getFiles(page * limit, limit, devices, types).execute().body()!!
-
-        return apiService.getUsers(limit, page.toLong())
+    override suspend fun loadData(page: Int, limit: Int, params: List<SearchParamModel>): List<User> {
+        //TODO format params in accordance with github rules and get resultQuery string
+        return apiService.getSearchUsers(limit, page.toLong()).items
     }
 
-    override suspend fun onDataLoaded(
-        result: List<User>,
-        dao: SearchableDao,
-        force: Boolean
-    ) {
+    override suspend fun onDataLoaded(result: List<User>, dao: SearchableDao, force: Boolean) {
         this.dao.insertAll(result)
     }
 }

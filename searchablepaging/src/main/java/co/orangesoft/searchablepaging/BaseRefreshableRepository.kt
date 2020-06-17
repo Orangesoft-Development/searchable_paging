@@ -3,6 +3,7 @@ package by.orangesoft.paging
 import androidx.lifecycle.LiveData
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
+import co.orangesoft.searchablepaging.SearchParamModel
 import kotlinx.coroutines.*
 import java.lang.Exception
 import java.lang.ref.WeakReference
@@ -13,10 +14,6 @@ import kotlin.coroutines.CoroutineContext
  */
 abstract class BaseRefreshableRepository<DB, API>(
     protected val datasource: SearchableDataSourceFactory<DB>,
-    protected val PAGE_SIZE: Int = DEFAULT_PAGE_SIZE,
-    protected val DISTANCE: Int = DEFAULT_DISTANCE,
-    protected val INITIAL_PAGE: Int = DEFAULT_INITIAL_PAGE,
-    protected var PAGE: Int = DEFAULT_INITIAL_PAGE,
     protected val parentJob: Job? = null
 ): SearchableRepository, CoroutineScope {
 
@@ -25,6 +22,11 @@ abstract class BaseRefreshableRepository<DB, API>(
         const val DEFAULT_DISTANCE: Int = 5
         const val DEFAULT_INITIAL_PAGE: Int = 0
     }
+
+    protected open val PAGE_SIZE: Int = DEFAULT_PAGE_SIZE
+    protected open val DISTANCE: Int = DEFAULT_DISTANCE
+    protected open val INITIAL_PAGE: Int = DEFAULT_INITIAL_PAGE
+    protected open var PAGE: Int = DEFAULT_INITIAL_PAGE
 
     override val coroutineContext: CoroutineContext by lazy { Dispatchers.IO + SupervisorJob(parentJob) }
 
@@ -52,6 +54,8 @@ abstract class BaseRefreshableRepository<DB, API>(
                 launch { getItem() }
         }
     }
+
+    protected val queries: MutableList<SearchParamModel> = arrayListOf()
 
     val pagedConfig: PagedList.Config by lazy {
         PagedList.Config.Builder()
@@ -86,7 +90,7 @@ abstract class BaseRefreshableRepository<DB, API>(
          loadListener?.get()?.invoke(false) 
 
         try {
-            val result = loadData(PAGE, PAGE_SIZE)
+            val result = loadData(PAGE, PAGE_SIZE, queries)
             onDataLoaded(result, datasource.dao, force)
             PAGE++
             
@@ -114,7 +118,6 @@ abstract class BaseRefreshableRepository<DB, API>(
     override fun getQuery(key: String): String = datasource.getQuery(key)
 
     protected abstract fun validateQueryKey(key: String): Boolean
-    protected abstract suspend fun loadData(page: Int, limit: Int): API
+    protected abstract suspend fun loadData(page: Int, limit: Int, params: List<SearchParamModel>): API
     protected abstract suspend fun onDataLoaded(result: API, dao: SearchableDao, force: Boolean)
-
 }
