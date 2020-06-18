@@ -24,7 +24,7 @@ abstract class SearchableListRepository<DB, API>  constructor(
             }
         }
 
-        setSearchParam(query)
+        addSearchParam(query)
 
         super.setQuery(query.first to queryString.toString(), refresh)
     }

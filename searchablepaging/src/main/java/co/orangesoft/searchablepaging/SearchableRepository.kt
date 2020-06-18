@@ -13,7 +13,7 @@ interface SearchableRepository {
 
     fun getSearchParams(): List<SearchParamModel>
 
-    fun setSearchParam(query: Pair<String, List<String>>)
+    fun addSearchParam(query: Pair<String, List<String>>)
 
-    fun clearSearchParams(refresh: Boolean = false)
+    fun clearSearchParams(shouldRefresh: Boolean = false)
 }

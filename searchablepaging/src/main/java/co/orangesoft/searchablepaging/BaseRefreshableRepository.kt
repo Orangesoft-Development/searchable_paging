@@ -124,7 +124,7 @@ abstract class BaseRefreshableRepository<DB, API>(
         return searchParams
     }
 
-    override fun setSearchParam(query: Pair<String, List<String>>) {
+    override fun addSearchParam(query: Pair<String, List<String>>) {
         searchParams.add(SearchParamModel(query.first, query.second))
     }
 
