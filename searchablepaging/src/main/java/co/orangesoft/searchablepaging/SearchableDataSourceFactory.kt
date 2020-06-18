@@ -1,4 +1,4 @@
-package by.orangesoft.paging
+package co.orangesoft.searchablepaging
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -10,15 +10,14 @@ import java.lang.StringBuilder
  */
 abstract class SearchableDataSourceFactory<DB>(val dao: SearchableDao) : DataSource.Factory<Int, DB>() {
     private val mutableLiveData: MutableLiveData<DataSource<Int, DB>> = MutableLiveData()
-    private var dataSource: DataSource<Int, DB>? = null
 
-    private val queries = HashMap<String, String>()
+    private val queries = HashMap<String, String?>()
 
     fun setQuery(query: Pair<String, String?>) {
         if(query.second.isNullOrBlank())
             queries.remove(query.first)
         else
-            queries[query.first] = query.second!!
+            queries[query.first] = query.second
     }
 
     fun getQuery(): String {
@@ -43,18 +42,12 @@ abstract class SearchableDataSourceFactory<DB>(val dao: SearchableDao) : DataSou
 
     fun getQueryKeys(): Set<String> = queries.keys
     fun getQuery(key: String): String = queries[key] ?: ""
-    fun getQueries(): Map<String, String> = queries
-    fun splitQueries(key: String): List<String> = getQuery(key).split(".%.{1,16}.%").map { it.replace("%","") }.let {
-        if(it.size == 1 && it[0].isEmpty())
-            ArrayList()
-        else
-            it
-    }
+    fun getQueries(): Map<String, String?> = queries
 
     override fun create(): DataSource<Int, DB> {
-        dataSource = getDataSource(dao).create()
+        val dataSource = getDataSource(dao).create()
         mutableLiveData.postValue(dataSource)
-        return dataSource!!
+        return dataSource
     }
 
     abstract fun getDataSource(dao: SearchableDao): DataSource.Factory<Int, DB>

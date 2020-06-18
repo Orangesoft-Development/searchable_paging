@@ -1,4 +1,4 @@
-package by.orangesoft.paging
+package co.orangesoft.searchablepaging
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope

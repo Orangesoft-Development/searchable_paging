@@ -1,4 +1,4 @@
-package by.orangesoft.paging
+package co.orangesoft.searchablepaging
 
 /**
  * Created by set.

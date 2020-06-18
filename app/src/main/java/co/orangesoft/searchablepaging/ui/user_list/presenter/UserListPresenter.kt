@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.DiffUtil
 import co.orangesoft.searchablepaging.models.User
 import co.orangesoft.searchablepaging.repositories.AppDatabaseRepository
 import co.orangesoft.searchablepaging.repositories.TestPagingRepository
+import co.orangesoft.searchablepaging.repositories.TestPagingRepository.Companion.KEY_LOGIN
 import co.orangesoft.searchablepaging.ui.base.BasePresenter
 import co.orangesoft.searchablepaging.ui.user_list.view.UserListMvpView
 import kotlinx.coroutines.Dispatchers
@@ -39,6 +40,7 @@ class UserListPresenter(
         super.onFirstViewAttach()
 
         savedTextState = SavedTextState()
+        testPagingRepository.setQuery(Pair(KEY_LOGIN, "m"))
     }
 
     override fun onPresenterDestroy() {

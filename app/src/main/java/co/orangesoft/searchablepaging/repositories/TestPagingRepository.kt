@@ -1,8 +1,8 @@
 package co.orangesoft.searchablepaging.repositories
 
-import by.orangesoft.paging.SearchableDao
-import by.orangesoft.paging.SearchableDataSourceFactory
-import by.orangesoft.paging.SearchableListRepository
+import co.orangesoft.searchablepaging.SearchableDao
+import co.orangesoft.searchablepaging.SearchableDataSourceFactory
+import co.orangesoft.searchablepaging.SearchableListRepository
 import co.orangesoft.searchablepaging.SearchParamModel
 import co.orangesoft.searchablepaging.api.ApiService
 import co.orangesoft.searchablepaging.dao.UserDao
@@ -31,7 +31,13 @@ class TestPagingRepository(val apiService: ApiService, factory: SearchableDataSo
 
     override suspend fun loadData(page: Int, limit: Int, params: List<SearchParamModel>): List<User> {
         //TODO format params in accordance with github rules and get resultQuery string
-        return apiService.getSearchUsers(limit, page.toLong()).items
+        var resultQuery: String? = null
+
+        if (params.isNotEmpty()) {
+            resultQuery = params[0].key + ":" + params[0].values[0]
+        }
+
+        return apiService.getSearchUsers(limit, page.toLong(), resultQuery).items
     }
 
     override suspend fun onDataLoaded(result: List<User>, dao: SearchableDao, force: Boolean) {

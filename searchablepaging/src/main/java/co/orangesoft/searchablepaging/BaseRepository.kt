@@ -1,4 +1,4 @@
-package by.orangesoft.paging
+package co.orangesoft.searchablepaging
 
 import androidx.lifecycle.LiveData
 import androidx.paging.PagedList

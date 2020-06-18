@@ -1,9 +1,8 @@
-package by.orangesoft.paging
+package co.orangesoft.searchablepaging
 
 import androidx.lifecycle.LiveData
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
-import co.orangesoft.searchablepaging.SearchParamModel
 import kotlinx.coroutines.*
 import java.lang.Exception
 import java.lang.ref.WeakReference
@@ -32,6 +31,7 @@ abstract class BaseRefreshableRepository<DB, API>(
 
     private var loadListener: WeakReference<OnLoadListener>? = null
 
+    private val searchParams: MutableList<SearchParamModel> = arrayListOf()
     private val callback: PagedList.BoundaryCallback<DB> = object : PagedList.BoundaryCallback<DB>() {
         private var isFirstLoad = true
 
@@ -54,8 +54,6 @@ abstract class BaseRefreshableRepository<DB, API>(
                 launch { getItem() }
         }
     }
-
-    protected val queries: MutableList<SearchParamModel> = arrayListOf()
 
     val pagedConfig: PagedList.Config by lazy {
         PagedList.Config.Builder()
@@ -85,37 +83,58 @@ abstract class BaseRefreshableRepository<DB, API>(
 
     private suspend fun getItem(force: Boolean = false) {
 
-        if (force) PAGE = INITIAL_PAGE
+        if (force) {
+            PAGE = INITIAL_PAGE
+        }
 
-         loadListener?.get()?.invoke(false) 
+        loadListener?.get()?.invoke(false)
 
         try {
-            val result = loadData(PAGE, PAGE_SIZE, queries)
+            val result = loadData(PAGE, PAGE_SIZE, searchParams)
             onDataLoaded(result, datasource.dao, force)
             PAGE++
-            
             loadListener?.get()?.invoke(true)
+
         } catch (e: Exception){
             e.printStackTrace()
             loadListener?.get()?.invoke(e)
         }
     }
 
+    /*Setting query for DB*/
     override fun setQuery(query: Pair<String, String?>, refresh: Boolean) {
-        if(!validateQueryKey(query.first))
+        if (!validateQueryKey(query.first)) {
             return
+        }
 
         datasource.setQuery(query)
         datasource.getData().value?.invalidate()
 
         PAGE = INITIAL_PAGE
 
-        if(refresh)
+        if (refresh) {
             refresh(false)
+        }
     }
 
     override fun getQuery(): String = datasource.getQuery()
     override fun getQuery(key: String): String = datasource.getQuery(key)
+
+    override fun getSearchParams(): List<SearchParamModel> {
+        return searchParams
+    }
+
+    override fun setSearchParam(query: Pair<String, List<String>>) {
+        searchParams.add(SearchParamModel(query.first, query.second))
+    }
+
+    override fun clearSearchParams(shouldRefresh: Boolean) {
+        searchParams.clear()
+
+        if (shouldRefresh) {
+            refresh(shouldRefresh)
+        }
+    }
 
     protected abstract fun validateQueryKey(key: String): Boolean
     protected abstract suspend fun loadData(page: Int, limit: Int, params: List<SearchParamModel>): API

@@ -1,12 +1,7 @@
 package co.orangesoft.searchablepaging.di
 
-import androidx.paging.DataSource
-import by.orangesoft.paging.SearchableDao
-import by.orangesoft.paging.SearchableDataSourceFactory
 import co.orangesoft.searchablepaging.api.ApiModuleImpl
-import co.orangesoft.searchablepaging.dao.UserDao
 import co.orangesoft.searchablepaging.extensions.UserSourceFactory
-import co.orangesoft.searchablepaging.models.User
 import co.orangesoft.searchablepaging.repositories.AppDatabaseRepository
 import co.orangesoft.searchablepaging.repositories.TestPagingRepository
 import co.orangesoft.searchablepaging.repositories.UserApiRepository
