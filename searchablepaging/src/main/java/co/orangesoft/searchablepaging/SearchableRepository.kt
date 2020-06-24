@@ -5,15 +5,11 @@ package co.orangesoft.searchablepaging
  */
 interface SearchableRepository {
 
-    fun setQuery(query: Pair<String, String?>, refresh: Boolean = false)
+    fun getQuery(param: String): List<Any>
 
-    fun getQuery(): String
+    fun getQueries(): Map<String, List<Any>>
 
-    fun getQuery(key: String): String
+    fun setQuery(force: Boolean, param: String, values: List<Any>)
 
-    fun getSearchParams(): List<SearchParamModel>
-
-    fun addSearchParam(query: Pair<String, List<String>>)
-
-    fun clearSearchParams(shouldRefresh: Boolean = false)
+    fun clearParams(force: Boolean = false)
 }

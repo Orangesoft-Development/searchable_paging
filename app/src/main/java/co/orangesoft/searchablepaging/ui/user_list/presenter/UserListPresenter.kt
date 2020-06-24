@@ -40,7 +40,7 @@ class UserListPresenter(
         super.onFirstViewAttach()
 
         savedTextState = SavedTextState()
-        testPagingRepository.setQuery(Pair(KEY_LOGIN, "m"))
+        testPagingRepository.setQuery(true, KEY_LOGIN, listOf("my"))
     }
 
     override fun onPresenterDestroy() {

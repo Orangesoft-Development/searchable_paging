@@ -5,15 +5,24 @@ import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import kotlinx.coroutines.*
 import java.lang.Exception
+import java.lang.StringBuilder
 import java.lang.ref.WeakReference
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 import kotlin.coroutines.CoroutineContext
+import kotlin.reflect.jvm.internal.impl.load.kotlin.JvmType
 
 /**
  * Created by set.
  */
 abstract class BaseRefreshableRepository<DB, API>(
     protected val datasource: SearchableDataSourceFactory<DB>,
-    protected val parentJob: Job? = null
+    protected val parentJob: Job? = null,
+    protected open val PAGE_SIZE: Int = DEFAULT_PAGE_SIZE,
+    protected open val DISTANCE: Int = DEFAULT_DISTANCE,
+    protected open val INITIAL_PAGE: Int = DEFAULT_INITIAL_PAGE,
+    protected open var PAGE: Int = DEFAULT_INITIAL_PAGE
 ): SearchableRepository, CoroutineScope {
 
     companion object {
@@ -22,16 +31,13 @@ abstract class BaseRefreshableRepository<DB, API>(
         const val DEFAULT_INITIAL_PAGE: Int = 0
     }
 
-    protected open val PAGE_SIZE: Int = DEFAULT_PAGE_SIZE
-    protected open val DISTANCE: Int = DEFAULT_DISTANCE
-    protected open val INITIAL_PAGE: Int = DEFAULT_INITIAL_PAGE
-    protected open var PAGE: Int = DEFAULT_INITIAL_PAGE
-
     override val coroutineContext: CoroutineContext by lazy { Dispatchers.IO + SupervisorJob(parentJob) }
 
     private var loadListener: WeakReference<OnLoadListener>? = null
 
-    private val searchParams: MutableList<SearchParamModel> = arrayListOf()
+    private val dbQueries = HashMap<String, String>()
+    private val searchParams: HashMap<String, List<Any>> = hashMapOf()
+
     private val callback: PagedList.BoundaryCallback<DB> = object : PagedList.BoundaryCallback<DB>() {
         private var isFirstLoad = true
 
@@ -50,8 +56,9 @@ abstract class BaseRefreshableRepository<DB, API>(
         }
 
         override fun onItemAtEndLoaded(itemAtEnd: DB) {
-            if(PAGE > 0)
+            if(PAGE > 0) {
                 launch { getItem() }
+            }
         }
     }
 
@@ -101,42 +108,55 @@ abstract class BaseRefreshableRepository<DB, API>(
         }
     }
 
-    /*Setting query for DB*/
-    override fun setQuery(query: Pair<String, String?>, refresh: Boolean) {
-        if (!validateQueryKey(query.first)) {
-            return
-        }
-
-        datasource.setQuery(query)
-        datasource.getData().value?.invalidate()
-
-        PAGE = INITIAL_PAGE
-
-        if (refresh) {
-            refresh(false)
-        }
+    override fun getQuery(param: String): List<Any> {
+        return searchParams[param] ?: listOf()
     }
 
-    override fun getQuery(): String = datasource.getQuery()
-    override fun getQuery(key: String): String = datasource.getQuery(key)
-
-    override fun getSearchParams(): List<SearchParamModel> {
+    override fun getQueries(): Map<String, List<Any>> {
         return searchParams
     }
 
-    override fun addSearchParam(query: Pair<String, List<String>>) {
-        searchParams.add(SearchParamModel(query.first, query.second))
+    override fun setQuery(force: Boolean, param: String, values: List<Any>) {
+
+        if (!validateQueryKey(param)) {
+            return
+        }
+
+        if (values.isEmpty()) {
+            searchParams.remove(param)
+        } else {
+            searchParams[param] = values
+        }
+
+        PAGE = INITIAL_PAGE
+
+        if (force) {
+            refresh(force)
+        }
     }
 
-    override fun clearSearchParams(shouldRefresh: Boolean) {
+    //TODO think about benefits of dynamic query and how to use it (@rawQuery?)
+    fun buildQueryForDB(param: String, vararg values: Any): String {
+        val queryString = StringBuilder()
+        values.forEach {
+            if (queryString.isBlank()) {
+                queryString.append(it)
+            } else {
+                queryString.append("%' OR $param LIKE '%$it")
+            }
+        }
+        return queryString.toString()
+    }
+
+    override fun clearParams(force: Boolean) {
         searchParams.clear()
 
-        if (shouldRefresh) {
-            refresh(shouldRefresh)
+        if (force) {
+            refresh(force)
         }
     }
 
     protected abstract fun validateQueryKey(key: String): Boolean
-    protected abstract suspend fun loadData(page: Int, limit: Int, params: List<SearchParamModel>): API
+    protected abstract suspend fun loadData(page: Int, limit: Int, params: HashMap<String, List<Any>>): API
     protected abstract suspend fun onDataLoaded(result: API, dao: SearchableDao, force: Boolean)
 }
