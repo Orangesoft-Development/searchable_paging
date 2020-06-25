@@ -14,14 +14,11 @@ abstract class UserDao: SearchableDao {
         insertAll(users)
     }
 
-    @Query("SELECT * FROM user_items ORDER BY id ASC")
-    abstract fun selectPaged(): DataSource.Factory<Int, User>
+    @Query("SELECT * FROM user_items WHERE login LIKE '%' || :loginQuery || '%' ORDER BY id ASC")
+    abstract fun getUsersDataSource(loginQuery: String): DataSource.Factory<Int, User>
 
     @Query("SELECT * FROM user_items")
     abstract suspend fun getAll(): List<User>
-
-    @Query("SELECT * FROM user_items WHERE login LIKE :login")
-    abstract suspend fun findByLogin(login: String): User
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun insert(vararg user: User)

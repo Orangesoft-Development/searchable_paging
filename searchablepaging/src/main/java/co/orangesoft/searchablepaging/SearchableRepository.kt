@@ -3,7 +3,7 @@ package co.orangesoft.searchablepaging
 /**
  * Created by set.
  */
-interface SearchableRepository {
+interface SearchableRepository<DB> : BaseRepository<DB> {
 
     fun getQuery(param: String): List<Any>
 
@@ -11,5 +11,5 @@ interface SearchableRepository {
 
     fun setQuery(force: Boolean, param: String, values: List<Any>)
 
-    fun clearParams(force: Boolean = false)
+    fun clearQueries(force: Boolean = false)
 }

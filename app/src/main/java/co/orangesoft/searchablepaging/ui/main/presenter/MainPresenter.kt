@@ -70,7 +70,7 @@ class MainPresenter(
         tryCatch({
             withContext(Dispatchers.IO) {
                 appDatabaseRepository.withTransaction {
-                    appDatabaseRepository.userDao().setNewUsers(usersFromNetwork)
+                    appDatabaseRepository.userDao().insertAll(usersFromNetwork)
                 }
             }
             viewState?.showMessage("Success writing into database")

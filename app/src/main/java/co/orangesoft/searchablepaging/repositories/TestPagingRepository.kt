@@ -5,12 +5,13 @@ import co.orangesoft.searchablepaging.SearchableDao
 import co.orangesoft.searchablepaging.SearchableDataSourceFactory
 import co.orangesoft.searchablepaging.api.ApiService
 import co.orangesoft.searchablepaging.dao.UserDao
+import co.orangesoft.searchablepaging.extensions.UserSourceFactory
 import co.orangesoft.searchablepaging.models.User
 import kotlinx.coroutines.Job
 import java.lang.StringBuilder
 
-class TestPagingRepository(val apiService: ApiService, factory: SearchableDataSourceFactory<User>, parentJob: Job? = null)
-    : BaseRefreshableRepository<User, List<User>>(factory, parentJob = parentJob, PAGE_SIZE = 5) {
+class TestPagingRepository(val apiService: ApiService, val factory: SearchableDataSourceFactory<User>, parentJob: Job? = null)
+    : BaseRefreshableRepository<User, List<User>>(factory, parentJob = parentJob, PAGE_SIZE = 10) {
 
     private val dao: UserDao by lazy { datasource.dao as UserDao }
 
@@ -35,9 +36,9 @@ class TestPagingRepository(val apiService: ApiService, factory: SearchableDataSo
             resultQuery = StringBuilder()
 
             params.entries.forEach {
-                resultQuery.append(it.key)
-                    .append(":")
-                    .append(it.value[0])
+                resultQuery.append(it.value[0])
+                    .append(" in:")
+                    .append(KEY_LOGIN)
             }
         }
 

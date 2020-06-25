@@ -1,13 +1,14 @@
 package co.orangesoft.searchablepaging
 
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlin.coroutines.CoroutineContext
 
 /**
  * Created by set.
  */
-class OnLoadListener {
+class OnLoadListener(private val coroutineContext: CoroutineContext) {
 
     private var onStart: (() -> Unit)? = null
     private var onFinish: (() -> Unit)? = null
@@ -27,17 +28,22 @@ class OnLoadListener {
     }
 
     operator fun invoke(error: Throwable) {
-        GlobalScope.launch(Dispatchers.Main) {
-            onError?.invoke(error)
+        runBlocking(coroutineContext) {
+            launch {
+                onError?.invoke(error)
+            }
         }
     }
 
     operator fun invoke(isFinish: Boolean = false) {
-        GlobalScope.launch(Dispatchers.Main) {
-            if (isFinish)
-                onFinish?.invoke()
-            else
-                onStart?.invoke()
+        runBlocking(coroutineContext) {
+            launch(Dispatchers.Main) {
+                if (isFinish) {
+                    onFinish?.invoke()
+                } else {
+                    onStart?.invoke()
+                }
+            }
         }
     }
 }

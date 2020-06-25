@@ -5,25 +5,21 @@ import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import kotlinx.coroutines.*
 import java.lang.Exception
-import java.lang.StringBuilder
 import java.lang.ref.WeakReference
-import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 import kotlin.coroutines.CoroutineContext
-import kotlin.reflect.jvm.internal.impl.load.kotlin.JvmType
 
 /**
  * Created by set.
  */
 abstract class BaseRefreshableRepository<DB, API>(
-    protected val datasource: SearchableDataSourceFactory<DB>,
+    protected var datasource: SearchableDataSourceFactory<DB>,
     protected val parentJob: Job? = null,
     protected open val PAGE_SIZE: Int = DEFAULT_PAGE_SIZE,
     protected open val DISTANCE: Int = DEFAULT_DISTANCE,
     protected open val INITIAL_PAGE: Int = DEFAULT_INITIAL_PAGE,
     protected open var PAGE: Int = DEFAULT_INITIAL_PAGE
-): SearchableRepository, CoroutineScope {
+): SearchableRepository<DB>, CoroutineScope {
 
     companion object {
         const val DEFAULT_PAGE_SIZE: Int = 20
@@ -31,7 +27,7 @@ abstract class BaseRefreshableRepository<DB, API>(
         const val DEFAULT_INITIAL_PAGE: Int = 0
     }
 
-    override val coroutineContext: CoroutineContext by lazy { Dispatchers.IO + SupervisorJob(parentJob) }
+    override val coroutineContext: CoroutineContext by lazy { Dispatchers.Main + SupervisorJob(parentJob) }
 
     private var loadListener: WeakReference<OnLoadListener>? = null
 
@@ -71,19 +67,19 @@ abstract class BaseRefreshableRepository<DB, API>(
     }
 
     val pagedItems: LiveData<PagedList<DB>> by lazy {
-        LivePagedListBuilder(datasource, pagedConfig)
+        LivePagedListBuilder(datasource , pagedConfig)
                 .setBoundaryCallback(callback)
                 .setInitialLoadKey(PAGE)
                 .build()
     }
 
-    open fun getItems(): LiveData<PagedList<DB>> = pagedItems
+    override fun getItems(): LiveData<PagedList<DB>> = pagedItems
 
-    fun refresh(force: Boolean = true) {
+    override fun refresh(force: Boolean) {
         launch { getItem(force) }
     }
 
-    fun setOnLoadListener(listener: OnLoadListener) {
+    override fun setOnLoadListener(listener: OnLoadListener) {
         loadListener?.apply { clear() }
         loadListener = WeakReference(listener)
     }
@@ -128,28 +124,19 @@ abstract class BaseRefreshableRepository<DB, API>(
             searchParams[param] = values
         }
 
-        PAGE = INITIAL_PAGE
-
-        if (force) {
-            refresh(force)
-        }
+        updateQueries(force)
     }
 
-    //TODO think about benefits of dynamic query and how to use it (@rawQuery?)
-    fun buildQueryForDB(param: String, vararg values: Any): String {
-        val queryString = StringBuilder()
-        values.forEach {
-            if (queryString.isBlank()) {
-                queryString.append(it)
-            } else {
-                queryString.append("%' OR $param LIKE '%$it")
-            }
-        }
-        return queryString.toString()
-    }
-
-    override fun clearParams(force: Boolean) {
+    override fun clearQueries(force: Boolean) {
         searchParams.clear()
+        updateQueries(force)
+    }
+
+    private fun updateQueries(force: Boolean) {
+        datasource.setQueries(searchParams)
+        datasource.invalidateDataSource()
+
+        PAGE = INITIAL_PAGE
 
         if (force) {
             refresh(force)

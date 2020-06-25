@@ -3,7 +3,6 @@ package co.orangesoft.searchablepaging
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.paging.DataSource
-import java.lang.StringBuilder
 
 /**
  * Created by set.
@@ -11,14 +10,13 @@ import java.lang.StringBuilder
 abstract class SearchableDataSourceFactory<DB>(val dao: SearchableDao) : DataSource.Factory<Int, DB>() {
 
     private val mutableLiveData: MutableLiveData<DataSource<Int, DB>> = MutableLiveData()
+    private var params: HashMap<String, List<Any>> = hashMapOf()
 
     override fun create(): DataSource<Int, DB> {
-        val dataSource = getDataSource(dao).create()
+        val dataSource = getDataSource(dao, params).create()
         mutableLiveData.postValue(dataSource)
         return dataSource
     }
-
-    abstract fun getDataSource(dao: SearchableDao): DataSource.Factory<Int, DB>
 
     open fun getData(): LiveData<DataSource<Int, DB>> {
         return mutableLiveData
@@ -27,4 +25,10 @@ abstract class SearchableDataSourceFactory<DB>(val dao: SearchableDao) : DataSou
     fun invalidateDataSource() {
         getData().value?.invalidate()
     }
+
+    fun setQueries(params: HashMap<String, List<Any>>) {
+        this.params = params
+    }
+
+    abstract fun getDataSource(dao: SearchableDao, params: HashMap<String, List<Any>>): DataSource.Factory<Int, DB>
 }
