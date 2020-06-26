@@ -5,7 +5,8 @@ import co.orangesoft.searchablepaging.SearchableDao
 import co.orangesoft.searchablepaging.SearchableDataSourceFactory
 import co.orangesoft.searchablepaging.api.ApiService
 import co.orangesoft.searchablepaging.dao.UserDao
-import co.orangesoft.searchablepaging.extensions.UserSourceFactory
+import co.orangesoft.searchablepaging.extensions.UserSourceFactory.Companion.KEY_FOLLOWERS
+import co.orangesoft.searchablepaging.extensions.UserSourceFactory.Companion.KEY_LOGIN
 import co.orangesoft.searchablepaging.models.User
 import kotlinx.coroutines.Job
 import java.lang.StringBuilder
@@ -14,11 +15,6 @@ class TestPagingRepository(val apiService: ApiService, val factory: SearchableDa
     : BaseRefreshableRepository<User, List<User>>(factory, parentJob = parentJob, PAGE_SIZE = 10) {
 
     private val dao: UserDao by lazy { datasource.dao as UserDao }
-
-    companion object {
-        const val KEY_LOGIN = "login"
-        const val KEY_FOLLOWERS = "followers"
-    }
 
     override fun validateQueryKey(key: String): Boolean {
         return when(key) {
