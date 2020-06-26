@@ -28,7 +28,7 @@ class TestPagingRepository(val apiService: ApiService, val factory: SearchableDa
         }
     }
 
-    override suspend fun loadData(page: Int, limit: Int, params: HashMap<String, List<Any>>): List<User> {
+    override suspend fun loadData(page: Int, limit: Int, params: Map<String, List<Any>>): List<User> {
         var resultQuery: StringBuilder? = null
 
         if (params.isNotEmpty()) {

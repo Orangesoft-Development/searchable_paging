@@ -15,7 +15,7 @@ internal class UserSourceFactory(dao: UserDao): SearchableDataSourceFactory<User
             loginQuery += if (loginQuery == "%") {
                 "$it"
             } else {
-                " OR login LIKE % $it"
+                " OR login LIKE %$it"
             }
         }
 

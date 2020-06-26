@@ -26,8 +26,28 @@ abstract class SearchableDataSourceFactory<DB>(val dao: SearchableDao) : DataSou
         getData().value?.invalidate()
     }
 
+    fun getQuery(param: String): List<Any> {
+        return params[param] ?: listOf()
+    }
+
+    fun getQueries(): Map<String, List<Any>> {
+        return params
+    }
+
+    fun setQuery(param: String, values: List<Any>) {
+        if (values.isEmpty()) {
+            params.remove(param)
+        } else {
+            params[param] = values
+        }
+    }
+
     fun setQueries(params: HashMap<String, List<Any>>) {
         this.params = params
+    }
+
+    fun clearQueries() {
+        params.clear()
     }
 
     abstract fun getDataSource(dao: SearchableDao, params: HashMap<String, List<Any>>): DataSource.Factory<Int, DB>

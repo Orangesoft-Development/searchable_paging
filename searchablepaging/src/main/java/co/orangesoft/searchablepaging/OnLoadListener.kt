@@ -8,7 +8,7 @@ import kotlin.coroutines.CoroutineContext
 /**
  * Created by set.
  */
-class OnLoadListener(private val coroutineContext: CoroutineContext) {
+class OnLoadListener(private val coroutineContext: CoroutineContext = Dispatchers.Main) {
 
     private var onStart: (() -> Unit)? = null
     private var onFinish: (() -> Unit)? = null
@@ -29,20 +29,16 @@ class OnLoadListener(private val coroutineContext: CoroutineContext) {
 
     operator fun invoke(error: Throwable) {
         runBlocking(coroutineContext) {
-            launch {
-                onError?.invoke(error)
-            }
+            onError?.invoke(error)
         }
     }
 
     operator fun invoke(isFinish: Boolean = false) {
         runBlocking(coroutineContext) {
-            launch(Dispatchers.Main) {
-                if (isFinish) {
-                    onFinish?.invoke()
-                } else {
-                    onStart?.invoke()
-                }
+            if (isFinish) {
+                onFinish?.invoke()
+            } else {
+                onStart?.invoke()
             }
         }
     }

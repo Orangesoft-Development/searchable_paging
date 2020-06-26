@@ -31,9 +31,6 @@ abstract class BaseRefreshableRepository<DB, API>(
 
     private var loadListener: WeakReference<OnLoadListener>? = null
 
-    private val dbQueries = HashMap<String, String>()
-    private val searchParams: HashMap<String, List<Any>> = hashMapOf()
-
     private val callback: PagedList.BoundaryCallback<DB> = object : PagedList.BoundaryCallback<DB>() {
         private var isFirstLoad = true
 
@@ -93,7 +90,7 @@ abstract class BaseRefreshableRepository<DB, API>(
         loadListener?.get()?.invoke(false)
 
         try {
-            val result = loadData(PAGE, PAGE_SIZE, searchParams)
+            val result = loadData(PAGE, PAGE_SIZE, datasource.getQueries())
             onDataLoaded(result, datasource.dao, force)
             PAGE++
             loadListener?.get()?.invoke(true)
@@ -105,11 +102,11 @@ abstract class BaseRefreshableRepository<DB, API>(
     }
 
     override fun getQuery(param: String): List<Any> {
-        return searchParams[param] ?: listOf()
+        return datasource.getQuery(param)
     }
 
     override fun getQueries(): Map<String, List<Any>> {
-        return searchParams
+        return datasource.getQueries()
     }
 
     override fun setQuery(force: Boolean, param: String, values: List<Any>) {
@@ -118,22 +115,16 @@ abstract class BaseRefreshableRepository<DB, API>(
             return
         }
 
-        if (values.isEmpty()) {
-            searchParams.remove(param)
-        } else {
-            searchParams[param] = values
-        }
-
+        datasource.setQuery(param, values)
         updateQueries(force)
     }
 
     override fun clearQueries(force: Boolean) {
-        searchParams.clear()
+        datasource.clearQueries()
         updateQueries(force)
     }
 
     private fun updateQueries(force: Boolean) {
-        datasource.setQueries(searchParams)
         datasource.invalidateDataSource()
 
         PAGE = INITIAL_PAGE
@@ -144,6 +135,6 @@ abstract class BaseRefreshableRepository<DB, API>(
     }
 
     protected abstract fun validateQueryKey(key: String): Boolean
-    protected abstract suspend fun loadData(page: Int, limit: Int, params: HashMap<String, List<Any>>): API
+    protected abstract suspend fun loadData(page: Int, limit: Int, params: Map<String, List<Any>>): API
     protected abstract suspend fun onDataLoaded(result: API, dao: SearchableDao, force: Boolean)
 }
