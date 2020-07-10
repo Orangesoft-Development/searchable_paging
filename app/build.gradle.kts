@@ -1,15 +1,12 @@
 import com.android.build.gradle.api.ApplicationVariant
 import com.android.build.gradle.api.BaseVariantOutput
 import com.android.build.gradle.internal.api.BaseVariantOutputImpl
-import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 
 plugins {
     id("com.android.application")
     kotlin("android")
     kotlin("kapt")
     kotlin("android.extensions")
-    id("androidx.navigation.safeargs")
-    id("com.github.ben-manes.versions")
 
 }
 
@@ -54,10 +51,6 @@ android {
             include("arm64-v8a")
             isUniversalApk = false
         }
-    }
-
-    dataBinding {
-        isEnabled = true
     }
 
     androidExtensions {
@@ -106,7 +99,6 @@ dependencies {
     implementation(Depends.BaseAndroid.constraint)
     implementation(Depends.BaseAndroid.cardview)
     implementation(Depends.BaseAndroid.annotations)
-    implementation(Depends.BaseAndroid.localBroadcast)
     implementation(Depends.BaseAndroid.fragments)
     implementation(Depends.BaseAndroid.fragmentsKtx)
     implementation(Depends.BaseAndroid.transition)
@@ -115,74 +107,17 @@ dependencies {
     implementation(Depends.Coroutines.core)
     implementation(Depends.Coroutines.android)
 
-    implementation(Depends.Navigation.fragment)
-    implementation(Depends.Navigation.ui)
-
-    implementation(Depends.Lifecycle.runtime)
-    implementation(Depends.Lifecycle.extensions)
-    implementation(Depends.Lifecycle.viewModelExtensions)
-    kapt(Depends.LifecyclePlugins.plugin)
-
-    implementation(Depends.Api.core)
-    implementation(Depends.Api.kotlin)
     implementation(Depends.Api.okhttp)
-    implementation(Depends.Api.converter)
-    implementation(Depends.Api.adapters)
-    kapt(Depends.Api.codegen)
     implementation(Depends.Api.retrofit)
     implementation(Depends.Api.logging)
 
-    implementation(Depends.Image.core)
-    implementation(Depends.Image.plugin)
-    kapt(Depends.ImagePlugins.compiler)
-
-    implementation(Depends.BindingCollections.core)
-    implementation(Depends.BindingCollections.plugin)
-    implementation(Depends.BindingCollections.paging)
-    implementation(Depends.BindingCollections.viewPager)
-
     implementation(Depends.Paging.core)
-
-    implementation(Depends.Di.core)
-    implementation(Depends.Di.support)
-    kapt(Depends.DiPlugins.compiler)
-    kapt(Depends.DiPlugins.processor)
-
-    implementation(Depends.Misc.discreteScrollView)
-
-    implementation(Depends.Misc.charts)
-    implementation(Depends.Misc.easyPopUps)
-    implementation(Depends.Misc.viewPagerIndicator)
-    implementation(Depends.Handy.core)
-    implementation(Depends.Handy.databinding)
-    implementation(Depends.swipeLayout)
-    implementation(Depends.pinEntryEditText) {
-        exclude("androidx.appcompat", "appcompat")
-    }
-    implementation(Depends.inputMask)
-
-    implementation(Depends.Worker.worker)
-    implementation(Depends.Worker.workerKtx)
-
-    implementation(Depends.Koin.koinAndroid)
-    implementation(Depends.Koin.koinAndroidScope)
-    implementation(Depends.Koin.koinAndroidViewModel)
 
     api(Depends.Database.runtime)
     implementation(Depends.Database.ktx)
+    implementation("androidx.navigation:navigation-fragment-ktx:2.1.0")
+    implementation("androidx.navigation:navigation-ui-ktx:2.1.0")
     kapt(Depends.DatabasePlugin.plugin)
-
-    implementation(Depends.lokalise) {
-        isTransitive = true
-    }
-}
-
-tasks.withType<DependencyUpdatesTask> {
-
-    checkForGradleUpdate = true
-    outputFormatter = "json"
-    outputDir = "build/dependencyUpdates"
-    reportfileName = "report"
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().all {

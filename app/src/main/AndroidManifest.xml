@@ -13,7 +13,7 @@
             android:supportsRtl="true"
             android:theme="@style/AppTheme"
             tools:replace="android:icon, android:name, android:theme, android:allowBackup">
-        <activity android:name=".ui.main.view.MainActivity">
+        <activity android:name=".ui.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
@@ -21,7 +21,6 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".ui.user_list.view.UserListActivity"/>
     </application>
 
 </manifest>

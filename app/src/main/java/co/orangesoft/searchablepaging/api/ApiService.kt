@@ -6,10 +6,6 @@ import retrofit2.http.GET
 import retrofit2.http.Query
 
 interface ApiService {
-
-    @GET("users")
-    suspend fun getUsers(@Query("per_page") per_page: Int? = 100, @Query("since") since: Long? = 0): List<User>
-
     @GET("search/users")
     suspend fun getSearchUsers(@Query("per_page") per_page: Int? = 100,
                                @Query("since") since: Long? = 0,

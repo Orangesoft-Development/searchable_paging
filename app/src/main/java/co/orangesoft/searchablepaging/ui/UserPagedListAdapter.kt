@@ -1,4 +1,4 @@
-package co.orangesoft.searchablepaging.ui.user_list.view
+package co.orangesoft.searchablepaging.ui
 
 import android.view.LayoutInflater
 import android.view.View
