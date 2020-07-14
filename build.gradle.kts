@@ -7,8 +7,6 @@ buildscript {
     dependencies {
         classpath(Depends.BuildPlugins.gradlePlugin)
         classpath(Depends.BuildPlugins.kotlinPlugin)
-        classpath(Depends.BuildPlugins.navigationPlugin)
-        classpath(Depends.BuildPlugins.fabricPlugin)
         classpath("com.github.ben-manes:gradle-versions-plugin:0.26.0")
         classpath("io.fabric.tools:gradle:1.31.2")
 

@@ -36,25 +36,6 @@ dependencies {
     implementation(Depends.Kotlin.core)
     implementation(Depends.Kotlin.extensions)
 
-    implementation(Depends.Coroutines.core)
-    implementation(Depends.Coroutines.android)
-
-    implementation(Depends.Lifecycle.runtime)
-    implementation(Depends.Lifecycle.liveDataExtensions)
-    kapt(Depends.LifecyclePlugins.plugin)
-
-    api(Depends.Database.runtime)
     implementation(Depends.Database.ktx)
-    kapt(Depends.DatabasePlugin.plugin)
-
     implementation(Depends.Paging.core)
-
-    implementation(Depends.Api.core)
-    implementation(Depends.Api.converter)
-    implementation(Depends.Api.kotlin)
-    implementation(Depends.Api.adapters)
-    kapt(Depends.Api.codegen)
-    implementation(Depends.Api.retrofit)
-    implementation(Depends.Api.okhttp)
-    implementation(Depends.Api.logging)
 }

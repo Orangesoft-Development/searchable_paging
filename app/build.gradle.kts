@@ -38,12 +38,6 @@ android {
         versionName = Config.Application.versionName
     }
 
-    lintOptions {
-        isCheckReleaseBuilds = false
-        isAbortOnError  = false
-        setDisable(setOf("GradleCompatible", "FontValidationError"))
-    }
-
     splits {
         abi {
             isEnable = true
@@ -69,18 +63,6 @@ android {
             isDebuggable = false
             proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
         }
-
-        applicationVariants.all(object : Action<ApplicationVariant> {
-            override fun execute(variant: ApplicationVariant) {
-                variant.outputs.all(object : Action<BaseVariantOutput> {
-                    override fun execute(output: BaseVariantOutput) {
-                        val outputImpl = output as BaseVariantOutputImpl
-                        val fileName = "${Config.Application.appName}-v${Config.Application.versionName}-${variant.name}.apk"
-                        outputImpl.outputFileName = fileName
-                    }
-                })
-            }
-        })
     }
 }
 
@@ -96,13 +78,6 @@ dependencies {
 
     implementation(Depends.BaseAndroid.material)
     implementation(Depends.BaseAndroid.appcompat)
-    implementation(Depends.BaseAndroid.constraint)
-    implementation(Depends.BaseAndroid.cardview)
-    implementation(Depends.BaseAndroid.annotations)
-    implementation(Depends.BaseAndroid.fragments)
-    implementation(Depends.BaseAndroid.fragmentsKtx)
-    implementation(Depends.BaseAndroid.transition)
-    implementation(Depends.BaseAndroid.swipeToRefresh)
 
     implementation(Depends.Coroutines.core)
     implementation(Depends.Coroutines.android)
@@ -110,18 +85,11 @@ dependencies {
     implementation(Depends.Api.okhttp)
     implementation(Depends.Api.retrofit)
     implementation(Depends.Api.logging)
+    implementation(Depends.Api.gson)
 
     implementation(Depends.Paging.core)
 
     api(Depends.Database.runtime)
     implementation(Depends.Database.ktx)
-    implementation("androidx.navigation:navigation-fragment-ktx:2.1.0")
-    implementation("androidx.navigation:navigation-ui-ktx:2.1.0")
     kapt(Depends.DatabasePlugin.plugin)
-}
-
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().all {
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
 }
