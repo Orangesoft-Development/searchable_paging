@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools"
-          package="co.orangesoft.searchablepaging">
+          package="co.orangesoft.searchable_paging">
 
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
-            android:name=".PagingApp"
+            android:name="co.orangesoft.searchable_paging.PagingApp"
             android:allowBackup="true"
             android:icon="@mipmap/ic_launcher"
             android:label="@string/app_name"
@@ -13,7 +13,7 @@
             android:supportsRtl="true"
             android:theme="@style/AppTheme"
             tools:replace="android:icon, android:name, android:theme, android:allowBackup">
-        <activity android:name=".ui.MainActivity">
+        <activity android:name="co.orangesoft.searchable_paging.ui.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 

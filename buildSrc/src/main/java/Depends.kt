@@ -40,4 +40,12 @@ object Depends {
         const val logging = "com.squareup.okhttp3:logging-interceptor:${Versions.logging}"
         const val gson = "com.squareup.retrofit2:converter-gson:${Versions.gson}"
     }
+
+    object Test {
+        const val runner = "androidx.test:runner:${Versions.runner}"
+        const val rules = "androidx.test:rules:${Versions.rules}"
+        const val junit = "androidx.test.ext:junit:${Versions.junit}"
+        const val core_testing = "androidx.test:core:${Versions.core_testing}"
+        const val arch_core_testing = "androidx.arch.core:core-testing:${Versions.arch_core_testing}"
+    }
 }

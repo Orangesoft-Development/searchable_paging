@@ -24,4 +24,10 @@ object Versions {
     const val retrofit = "2.7.1"
     const val logging = "4.4.0"
     const val gson = "2.1.0"
+
+    const val runner = "1.2.0"
+    const val rules = "1.2.0"
+    const val junit = "1.1.1"
+    const val core_testing = "1.2.0"
+    const val arch_core_testing = "2.0.1"
 }

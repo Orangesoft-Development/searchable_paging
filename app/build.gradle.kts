@@ -36,15 +36,7 @@ android {
         targetSdkVersion(Versions.Android.targetSdk)
         versionCode = Config.Application.versionCode
         versionName = Config.Application.versionName
-    }
-
-    splits {
-        abi {
-            isEnable = true
-            reset()
-            include("arm64-v8a")
-            isUniversalApk = false
-        }
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     androidExtensions {
@@ -58,7 +50,6 @@ android {
         }
 
         getByName("release") {
-            isShrinkResources = true
             isMinifyEnabled = true
             isDebuggable = false
             proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
@@ -92,4 +83,10 @@ dependencies {
     api(Depends.Database.runtime)
     implementation(Depends.Database.ktx)
     kapt(Depends.DatabasePlugin.plugin)
+
+    androidTestImplementation(Depends.Test.runner)
+    androidTestImplementation(Depends.Test.rules)
+    androidTestImplementation(Depends.Test.junit)
+    androidTestImplementation(Depends.Test.core_testing)
+    androidTestImplementation(Depends.Test.arch_core_testing)
 }
