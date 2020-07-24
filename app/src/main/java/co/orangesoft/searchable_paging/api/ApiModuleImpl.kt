@@ -11,14 +11,12 @@ import java.util.concurrent.TimeUnit
 
 class ApiModuleImpl {
 
-    /** OkHttp интерцептор для логирования запросов **/
     private val loggingInterceptor: HttpLoggingInterceptor by lazy {
         HttpLoggingInterceptor().apply {
             level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BODY else HttpLoggingInterceptor.Level.NONE
         }
     }
 
-    /** Настройка OkHttp клиента**/
     private val httpClient: OkHttpClient by lazy {
         OkHttpClient.Builder()
             .connectTimeout(60, TimeUnit.MINUTES)
@@ -29,7 +27,6 @@ class ApiModuleImpl {
             .build()
     }
 
-    /** Настройка Retrofit'a для работы с нашими эндпоинтами**/
     val apiService: ApiService by lazy {
         Retrofit.Builder().apply {
             baseUrl(BASE_URL)
@@ -39,7 +36,6 @@ class ApiModuleImpl {
     }
 
 
-    /** OkHttp HEADER интерцептор для кастомных HEADER'ов **/
     private class HeaderInterceptor : Interceptor {
 
         override fun intercept(chain: Interceptor.Chain): Response {

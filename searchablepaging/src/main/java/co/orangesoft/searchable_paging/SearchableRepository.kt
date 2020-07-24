@@ -11,5 +11,7 @@ interface SearchableRepository<DB> : BaseRepository<DB> {
 
     fun setQuery(force: Boolean, param: String, values: List<Any>)
 
+    fun setQueries(force: Boolean, params: HashMap<String, List<Any>>)
+
     fun clearQueries(force: Boolean = false)
 }

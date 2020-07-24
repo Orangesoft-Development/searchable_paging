@@ -9,7 +9,15 @@ import java.lang.ref.WeakReference
 import kotlin.coroutines.CoroutineContext
 
 /**
- * Created by set.
+ * Base abstract class for searchable paging. Extends from it to use searchable paging library
+ *
+ * @param DB - Database model class
+ * @param API - Response from server
+ *
+ * @param PAGE_SIZE - declare it to use custom size per page, otherwise default value
+ * @param DISTANCE - declare it to use custom preload distance, otherwise default value
+ * @param INITIAL_PAGE - declare it to use custom first page, otherwise default value
+ * @param PAGE - declare it to use custom current page, otherwise default value
  */
 abstract class BaseRefreshableRepository<DB, API>(
     protected var datasource: SearchableDataSourceFactory<DB>,
@@ -20,6 +28,9 @@ abstract class BaseRefreshableRepository<DB, API>(
     protected open var PAGE: Int = DEFAULT_INITIAL_PAGE
 ): SearchableRepository<DB>, CoroutineScope {
 
+    /**
+     * Default paging parameters
+     */
     companion object {
         const val DEFAULT_PAGE_SIZE: Int = 20
         const val DEFAULT_DISTANCE: Int = 5
@@ -54,7 +65,11 @@ abstract class BaseRefreshableRepository<DB, API>(
         }
     }
 
-    val pagedConfig: PagedList.Config by lazy {
+    /**
+     * Default builder for PagedList.Config
+     * override pagedConfig if you want to customize PagedList.Config
+     */
+    open val pagedConfig: PagedList.Config by lazy {
         PagedList.Config.Builder()
                 .setPageSize(PAGE_SIZE)
                 .setPrefetchDistance(DISTANCE)
@@ -62,19 +77,29 @@ abstract class BaseRefreshableRepository<DB, API>(
                 .build()
     }
 
-    val pagedItems: LiveData<PagedList<DB>> by lazy {
+    private val pagedItems: LiveData<PagedList<DB>> by lazy {
         LivePagedListBuilder(datasource , pagedConfig)
                 .setBoundaryCallback(callback)
                 .setInitialLoadKey(PAGE)
                 .build()
     }
 
+    /**
+     * Use getItems() to observe data and submit it to paged list adapter
+     */
     override fun getItems(): LiveData<PagedList<DB>> = pagedItems
 
+    /**
+     * Use refresh to reload data from api
+     * @param force - set true if you want to reload data anyway
+     */
     override fun refresh(force: Boolean) {
         launch { getItem(force) }
     }
 
+    /**
+     * Use it to declare listener for data load
+     */
     override fun setOnLoadListener(listener: OnLoadListener) {
         loadListener?.apply { clear() }
         loadListener = WeakReference(listener)
@@ -100,14 +125,24 @@ abstract class BaseRefreshableRepository<DB, API>(
         }
     }
 
+    /**
+     * Get values of searching parameter
+     */
     override fun getQuery(param: String): List<Any> {
         return datasource.getQuery(param)
     }
 
+    /**
+     * Get map of searching parameters and its values
+     */
     override fun getQueries(): Map<String, List<Any>> {
         return datasource.getQueries()
     }
 
+    /**
+     * Set searching parameter and it values
+     * @param force - set true if you want to reload data anyway
+     */
     override fun setQuery(force: Boolean, param: String, values: List<Any>) {
 
         if (!validateQueryKey(param)) {
@@ -118,6 +153,26 @@ abstract class BaseRefreshableRepository<DB, API>(
         updateQueries(force)
     }
 
+    /**
+     * Set map of searching parameters and its values
+     * @param force - set true if you want to reload data anyway
+     */
+    override fun setQueries(force: Boolean, params: HashMap<String, List<Any>>) {
+
+        params.keys.forEach { key ->
+            if (!validateQueryKey(key)) {
+                return
+            }
+        }
+
+        datasource.setQueries(params)
+        updateQueries(force)
+    }
+
+    /**
+     * Clear all parameters
+     * @param force - set true if you want to reload data anyway
+     */
     override fun clearQueries(force: Boolean) {
         datasource.clearQueries()
         updateQueries(force)
@@ -133,7 +188,24 @@ abstract class BaseRefreshableRepository<DB, API>(
         }
     }
 
+    /**
+     * Check if this key match with any of your keys, which were declared for current searchable paging
+     */
     protected abstract fun validateQueryKey(key: String): Boolean
+
+    /**
+     * In this method build searching query for api and return the response from server request
+     * @param page - from this page you should start searching on server
+     * @param limit - limit of items per page
+     * @param params - map of parameters to build searching query for api
+     */
     protected abstract suspend fun loadData(page: Int, limit: Int, params: Map<String, List<Any>>): API
+
+    /**
+     * Do whatever you want with the data from server. For instance, insert result into database
+     * @param result - result from server
+     * @param dao - dao for inserting your api results
+     * @param force - flag to detect that current loading is forcible
+     */
     protected abstract suspend fun onDataLoaded(result: API, dao: SearchableDao, force: Boolean)
 }

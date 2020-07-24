@@ -10,10 +10,11 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import co.orangesoft.searchable_paging.R
 import co.orangesoft.searchable_paging.api.ApiModuleImpl
 import co.orangesoft.searchable_paging.extensions.UserSourceFactory
+import co.orangesoft.searchable_paging.extensions.UserSourceFactory.Companion.KEY_AVATAR
 import co.orangesoft.searchable_paging.extensions.UserSourceFactory.Companion.KEY_LOGIN
 import co.orangesoft.searchable_paging.models.User
 import co.orangesoft.searchable_paging.repositories.AppDatabaseRepository
-import co.orangesoft.searchable_paging.repositories.TestPagingRepository
+import co.orangesoft.searchable_paging.repositories.UserListRepository
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.Job
 
@@ -35,10 +36,10 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
-    private val testPagingRepository by lazy {
+    private val userListRepository by lazy {
         val userDao = AppDatabaseRepository.buildDatabase(this).userDao()
         val apiService = ApiModuleImpl().apiService
-        TestPagingRepository(apiService, UserSourceFactory(userDao), Job())
+        UserListRepository(apiService, UserSourceFactory(userDao), Job())
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,7 +50,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getPagedListLiveData(): LiveData<PagedList<User>> {
-        return testPagingRepository.pagedItems
+        return userListRepository.getItems()
     }
 
     private fun initViews() {
@@ -59,6 +60,9 @@ class MainActivity : AppCompatActivity() {
         }
         getPagedListLiveData().observe(this, Observer { userPagedListAdapter.submitList(it) })
 
-        testPagingRepository.setQuery(true, KEY_LOGIN, listOf("my"))
+        val filterParams: HashMap<String, List<Any>> = hashMapOf()
+        filterParams[KEY_LOGIN] = listOf("my")
+        filterParams[KEY_AVATAR] = listOf("avatars1")
+        userListRepository.setQueries(true, filterParams)
     }
 }
