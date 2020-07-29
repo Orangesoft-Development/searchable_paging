@@ -14,13 +14,15 @@ import kotlin.coroutines.CoroutineContext
  * @param DB - Database model class
  * @param API - Response from server
  *
+ * @param dataSource - dataSource factory which should extends from SearchableDataSourceFactory
+ * @param parentJob - job for coroutine
  * @param PAGE_SIZE - declare it to use custom size per page, otherwise default value
  * @param DISTANCE - declare it to use custom preload distance, otherwise default value
  * @param INITIAL_PAGE - declare it to use custom first page, otherwise default value
  * @param PAGE - declare it to use custom current page, otherwise default value
  */
 abstract class BaseRefreshableRepository<DB, API>(
-    protected var datasource: SearchableDataSourceFactory<DB>,
+    protected var dataSource: SearchableDataSourceFactory<DB>,
     protected val parentJob: Job? = null,
     protected open val PAGE_SIZE: Int = DEFAULT_PAGE_SIZE,
     protected open val DISTANCE: Int = DEFAULT_DISTANCE,
@@ -28,13 +30,12 @@ abstract class BaseRefreshableRepository<DB, API>(
     protected open var PAGE: Int = DEFAULT_INITIAL_PAGE
 ): SearchableRepository<DB>, CoroutineScope {
 
-    /**
-     * Default paging parameters
-     */
     companion object {
         const val DEFAULT_PAGE_SIZE: Int = 20
         const val DEFAULT_DISTANCE: Int = 5
         const val DEFAULT_INITIAL_PAGE: Int = 0
+
+        const val INVALID_QUERY_KEY_MESSAGE_ADVICE = "To use this key you should handle it in validateQueryKey() method"
     }
 
     override val coroutineContext: CoroutineContext by lazy { Dispatchers.Main + SupervisorJob(parentJob) }
@@ -78,7 +79,7 @@ abstract class BaseRefreshableRepository<DB, API>(
     }
 
     private val pagedItems: LiveData<PagedList<DB>> by lazy {
-        LivePagedListBuilder(datasource , pagedConfig)
+        LivePagedListBuilder(dataSource , pagedConfig)
                 .setBoundaryCallback(callback)
                 .setInitialLoadKey(PAGE)
                 .build()
@@ -86,6 +87,8 @@ abstract class BaseRefreshableRepository<DB, API>(
 
     /**
      * Use getItems() to observe data and submit it to paged list adapter
+     *
+     * @return LiveData with paged list
      */
     override fun getItems(): LiveData<PagedList<DB>> = pagedItems
 
@@ -114,8 +117,8 @@ abstract class BaseRefreshableRepository<DB, API>(
         loadListener?.get()?.invoke(false)
 
         try {
-            val result = loadData(PAGE, PAGE_SIZE, datasource.getQueries())
-            onDataLoaded(result, datasource.dao, force)
+            val result = loadData(PAGE, PAGE_SIZE, dataSource.getQueries())
+            onDataLoaded(result, dataSource.dao, force)
             PAGE++
             loadListener?.get()?.invoke(true)
 
@@ -127,45 +130,53 @@ abstract class BaseRefreshableRepository<DB, API>(
 
     /**
      * Get values of searching parameter
+     * @param param - searching parameter
+     *
+     * @return values of searching parameter
      */
     override fun getQuery(param: String): List<Any> {
-        return datasource.getQuery(param)
+        return dataSource.getQuery(param)
     }
 
     /**
      * Get map of searching parameters and its values
+     *
+     * @return map of searching parameters and its values
      */
     override fun getQueries(): Map<String, List<Any>> {
-        return datasource.getQueries()
+        return dataSource.getQueries()
     }
 
     /**
      * Set searching parameter and it values
      * @param force - set true if you want to reload data anyway
+     * @param param - searching parameter
+     * @param values - values of searching parameter
      */
     override fun setQuery(force: Boolean, param: String, values: List<Any>) {
 
         if (!validateQueryKey(param)) {
-            return
+            throw InvalidQueryKeyException("Key \"$param\" marked as invalid. $INVALID_QUERY_KEY_MESSAGE_ADVICE")
         }
 
-        datasource.setQuery(param, values)
+        dataSource.setQuery(param, values)
         updateQueries(force)
     }
 
     /**
      * Set map of searching parameters and its values
      * @param force - set true if you want to reload data anyway
+     * @param params - map of searching parameters and its values
      */
     override fun setQueries(force: Boolean, params: HashMap<String, List<Any>>) {
 
         params.keys.forEach { key ->
             if (!validateQueryKey(key)) {
-                return
+                throw InvalidQueryKeyException("Key \"$key\" marked as invalid. $INVALID_QUERY_KEY_MESSAGE_ADVICE")
             }
         }
 
-        datasource.setQueries(params)
+        dataSource.setQueries(params)
         updateQueries(force)
     }
 
@@ -174,12 +185,12 @@ abstract class BaseRefreshableRepository<DB, API>(
      * @param force - set true if you want to reload data anyway
      */
     override fun clearQueries(force: Boolean) {
-        datasource.clearQueries()
+        dataSource.clearQueries()
         updateQueries(force)
     }
 
     private fun updateQueries(force: Boolean) {
-        datasource.invalidateDataSource()
+        dataSource.invalidateDataSource()
 
         PAGE = INITIAL_PAGE
 
@@ -190,6 +201,9 @@ abstract class BaseRefreshableRepository<DB, API>(
 
     /**
      * Check if this key match with any of your keys, which were declared for current searchable paging
+     * @param key - current key
+     *
+     * @return boolean of matching current key with any of your keys
      */
     protected abstract fun validateQueryKey(key: String): Boolean
 
@@ -198,6 +212,8 @@ abstract class BaseRefreshableRepository<DB, API>(
      * @param page - from this page you should start searching on server
      * @param limit - limit of items per page
      * @param params - map of parameters to build searching query for api
+     *
+     * @return response from server request
      */
     protected abstract suspend fun loadData(page: Int, limit: Int, params: Map<String, List<Any>>): API
 
@@ -208,4 +224,6 @@ abstract class BaseRefreshableRepository<DB, API>(
      * @param force - flag to detect that current loading is forcible
      */
     protected abstract suspend fun onDataLoaded(result: API, dao: SearchableDao, force: Boolean)
+
+    private class InvalidQueryKeyException(message: String) : Exception(message)
 }

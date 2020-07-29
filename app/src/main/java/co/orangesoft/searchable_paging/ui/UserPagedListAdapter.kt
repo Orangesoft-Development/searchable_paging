@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import co.orangesoft.searchable_paging.R
 import co.orangesoft.searchable_paging.models.User
 import kotlinx.android.synthetic.main.user_item.view.*
+import java.lang.StringBuilder
 
 class UserPagedListAdapter(diffUtilCallback: DiffUtil.ItemCallback<User>): PagedListAdapter<User, UserPagedListAdapter.UserViewHolder>(diffUtilCallback) {
 
@@ -22,10 +23,14 @@ class UserPagedListAdapter(diffUtilCallback: DiffUtil.ItemCallback<User>): Paged
     }
 
 
-    inner class UserViewHolder(itemview: View) : RecyclerView.ViewHolder(itemview) {
+    inner class UserViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
         fun bind(user: User?) {
-            itemView.tvLogin.text = "${user?.id}. ${user?.login}"
+            user?.let {
+                itemView.tvLogin.text = StringBuilder(user.id.toString())
+                    .append(".")
+                    .append(user.login)
+            }
         }
     }
 }

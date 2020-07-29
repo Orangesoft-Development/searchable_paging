@@ -4,7 +4,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.paging.DataSource
 
 /**
- * Base abstract class for searchable data source. Create your own source factory class and extend it from
+ * Base abstract class for searchable DataSource. Create your own source factory class and extend it from
  * SearchableDataSourceFactory to use searchable paging library
  *
  * @param dao - dao, which implement SearchableDao
@@ -15,29 +15,39 @@ abstract class SearchableDataSourceFactory<DB>(val dao: SearchableDao) : DataSou
     private var params: HashMap<String, List<Any>> = hashMapOf()
 
     /**
-     * Create filtered datasource
+     * Create new filtered DataSource and notify LiveData about it
+     *
+     * @return the new DataSource
      */
     override fun create(): DataSource<Int, DB> {
-        val dataSource = getDataSource(dao, params).create()
-        getData().postValue(dataSource)
-        return dataSource
+        return getDataSource(dao, params).create().apply {
+            getData().postValue(this)
+        }
     }
 
     /**
-     * Get live data of datasource
+     * Get live data of DataSource
      * override to use your own
+     *
+     * @return current MutableLiveData of DataSource
      */
     open fun getData(): MutableLiveData<DataSource<Int, DB>> {
         return mutableLiveData
 
     }
 
+    /**
+     * invalidate DataSource
+     */
     fun invalidateDataSource() {
         getData().value?.invalidate()
     }
 
     /**
      * Get values of searching parameter
+     * @param param - searching parameter
+     *
+     * @return values of searching parameter
      */
     fun getQuery(param: String): List<Any> {
         return params[param] ?: listOf()
@@ -45,6 +55,8 @@ abstract class SearchableDataSourceFactory<DB>(val dao: SearchableDao) : DataSou
 
     /**
      * Get map of searching parameters and its values
+     *
+     * @return map of searching parameters and its values
      */
     fun getQueries(): Map<String, List<Any>> {
         return params
@@ -52,6 +64,8 @@ abstract class SearchableDataSourceFactory<DB>(val dao: SearchableDao) : DataSou
 
     /**
      * Set searching parameter and it values
+     * @param param - searching parameter
+     * @param values - values of searching parameter
      */
     fun setQuery(param: String, values: List<Any>) {
         if (values.isEmpty()) {
@@ -63,6 +77,7 @@ abstract class SearchableDataSourceFactory<DB>(val dao: SearchableDao) : DataSou
 
     /**
      * Set map of searching parameters and its values
+     * @param params - map of searching parameters and its values
      */
     fun setQueries(params: HashMap<String, List<Any>>) {
         this.params = params
@@ -76,7 +91,11 @@ abstract class SearchableDataSourceFactory<DB>(val dao: SearchableDao) : DataSou
     }
 
     /**
-     * Method for build database queries, apply it into dao and get back filtered datasource
+     * Method for build database queries, apply it into dao and get back filtered DataSource
+     * @param dao - dao for applying database queries
+     * @param params - map of searching parameters and its values
+     *
+     * @return filtered DataSource
      */
     abstract fun getDataSource(dao: SearchableDao, params: HashMap<String, List<Any>>): DataSource.Factory<Int, DB>
 }

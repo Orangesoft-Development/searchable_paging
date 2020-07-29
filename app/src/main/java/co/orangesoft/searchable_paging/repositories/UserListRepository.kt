@@ -1,6 +1,5 @@
 package co.orangesoft.searchable_paging.repositories
 
-import androidx.paging.PagedList
 import co.orangesoft.searchable_paging.BaseRefreshableRepository
 import co.orangesoft.searchable_paging.SearchableDao
 import co.orangesoft.searchable_paging.SearchableDataSourceFactory
@@ -12,10 +11,10 @@ import co.orangesoft.searchable_paging.models.User
 import kotlinx.coroutines.Job
 import java.lang.StringBuilder
 
-class UserListRepository(val apiService: ApiService, val factory: SearchableDataSourceFactory<User>, parentJob: Job? = null)
+class UserListRepository(private val apiService: ApiService, factory: SearchableDataSourceFactory<User>, parentJob: Job? = null)
     : BaseRefreshableRepository<User, List<User>>(factory, parentJob = parentJob, PAGE_SIZE = 10) {
 
-    private val dao: UserDao by lazy { datasource.dao as UserDao }
+    private val dao: UserDao by lazy { dataSource.dao as UserDao }
 
     override fun validateQueryKey(key: String): Boolean {
         return when(key) {

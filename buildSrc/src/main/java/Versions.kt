@@ -3,7 +3,7 @@ object Versions {
 
     object Android {
         const val buildTools      = "28.0.3"
-        const val minSdk          = 24
+        const val minSdk          = 21
         const val targetSdk       = 28
         const val compileSdk      = 28
         const val gradlePlugin    = "3.5.2"
