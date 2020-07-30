@@ -2,11 +2,12 @@ object Versions {
 
 
     object Android {
-        const val buildTools      = "28.0.3"
-        const val minSdk          = 21
-        const val targetSdk       = 28
-        const val compileSdk      = 28
-        const val gradlePlugin    = "4.0.0"
+        const val buildTools        = "28.0.3"
+        const val minSdk            = 21
+        const val targetSdk         = 28
+        const val compileSdk        = 28
+        const val gradlePlugin      = "4.0.0"
+        const val mavenGradlePlugin = "1.5"
     }
     
     const val kotlin = "1.3.61"

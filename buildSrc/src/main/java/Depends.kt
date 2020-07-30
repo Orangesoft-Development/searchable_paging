@@ -2,6 +2,7 @@ object Depends {
 
     object BuildPlugins {
         const val gradlePlugin = "com.android.tools.build:gradle:${Versions.Android.gradlePlugin}"
+        const val mavenGradlePlugin = "com.github.dcendents:android-maven-gradle-plugin:${Versions.Android.mavenGradlePlugin}"
         const val kotlinPlugin = "org.jetbrains.kotlin:kotlin-gradle-plugin:${Versions.kotlin}"
     }
 

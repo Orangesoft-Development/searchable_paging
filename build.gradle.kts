@@ -6,7 +6,7 @@ buildscript {
     dependencies {
         classpath(Depends.BuildPlugins.gradlePlugin)
         classpath(Depends.BuildPlugins.kotlinPlugin)
-
+        classpath(Depends.BuildPlugins.mavenGradlePlugin)
     }
 }
 
