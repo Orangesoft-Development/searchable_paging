@@ -9,7 +9,7 @@ import androidx.paging.DataSource
  *
  * @param dao - dao, which implement SearchableDao
  */
-abstract class SearchableDataSourceFactory<DB>(val dao: SearchableDao) : DataSource.Factory<Int, DB>() {
+abstract class SearchableDataSourceFactory<DB>(private val dao: SearchableDao) : DataSource.Factory<Int, DB>() {
 
     private val mutableLiveData: MutableLiveData<DataSource<Int, DB>> = MutableLiveData()
     private var params: HashMap<String, List<Any>> = hashMapOf()
@@ -33,7 +33,6 @@ abstract class SearchableDataSourceFactory<DB>(val dao: SearchableDao) : DataSou
      */
     open fun getData(): MutableLiveData<DataSource<Int, DB>> {
         return mutableLiveData
-
     }
 
     /**
@@ -98,4 +97,13 @@ abstract class SearchableDataSourceFactory<DB>(val dao: SearchableDao) : DataSou
      * @return filtered DataSource
      */
     abstract fun getDataSource(dao: SearchableDao, params: HashMap<String, List<Any>>): DataSource.Factory<Int, DB>
+
+    /**
+     * Do whatever you want with the data from server. For instance, insert result into database
+     * @param result - list of items from server
+     * @param force - flag to detect that current loading is forcible
+     *
+     * @return boolean value for success or failure result
+     */
+    abstract suspend fun onDataLoaded(result: List<DB>, force: Boolean): Boolean
 }

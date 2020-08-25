@@ -21,7 +21,7 @@ import kotlin.coroutines.CoroutineContext
  * @param INITIAL_PAGE - declare it to use custom first page, otherwise default value
  * @param PAGE - declare it to use custom current page, otherwise default value
  */
-abstract class BaseRefreshableRepository<DB, API>(
+abstract class BaseRefreshableRepository<DB>(
     protected var dataSource: SearchableDataSourceFactory<DB>,
     protected val parentJob: Job? = null,
     protected open val PAGE_SIZE: Int = DEFAULT_PAGE_SIZE,
@@ -36,9 +36,10 @@ abstract class BaseRefreshableRepository<DB, API>(
         const val DEFAULT_INITIAL_PAGE: Int = 0
 
         const val INVALID_QUERY_KEY_MESSAGE_ADVICE = "To use this key you should handle it in validateQueryKey() method"
+        const val DATABASE_EXCEPTION_MESSAGE = "Something was going wrong during database transaction"
     }
 
-    override val coroutineContext: CoroutineContext by lazy { Dispatchers.Main + SupervisorJob(parentJob) }
+    override val coroutineContext: CoroutineContext by lazy { Dispatchers.IO + SupervisorJob(parentJob) }
 
     private var loadListener: WeakReference<OnLoadListener>? = null
 
@@ -118,11 +119,15 @@ abstract class BaseRefreshableRepository<DB, API>(
 
         try {
             val result = loadData(PAGE, PAGE_SIZE, dataSource.getQueries())
-            onDataLoaded(result, dataSource.dao, force)
+            val success = dataSource.onDataLoaded(result, force)
             PAGE++
-            loadListener?.get()?.invoke(true)
+            if (success) {
+                loadListener?.get()?.invoke(true)
+            } else {
+                throw DatabaseTransactionException(DATABASE_EXCEPTION_MESSAGE)
+            }
 
-        } catch (e: Exception){
+        } catch (e: Exception) {
             e.printStackTrace()
             loadListener?.get()?.invoke(e)
         }
@@ -215,15 +220,9 @@ abstract class BaseRefreshableRepository<DB, API>(
      *
      * @return response from server request
      */
-    protected abstract suspend fun loadData(page: Int, limit: Int, params: Map<String, List<Any>>): API
-
-    /**
-     * Do whatever you want with the data from server. For instance, insert result into database
-     * @param result - result from server
-     * @param dao - dao for inserting your api results
-     * @param force - flag to detect that current loading is forcible
-     */
-    protected abstract suspend fun onDataLoaded(result: API, dao: SearchableDao, force: Boolean)
+    protected abstract suspend fun loadData(page: Int, limit: Int, params: Map<String, List<Any>>): List<DB>
 
     private class InvalidQueryKeyException(message: String) : Exception(message)
+
+    private class DatabaseTransactionException(message: String) : Exception(message)
 }

@@ -6,7 +6,7 @@ import co.orangesoft.searchable_paging.SearchableDataSourceFactory
 import co.orangesoft.searchable_paging.dao.UserDao
 import co.orangesoft.searchable_paging.models.User
 
-internal class UserSourceFactory(dao: UserDao) : SearchableDataSourceFactory<User>(dao) {
+internal class UserSourceFactory(private val dao: UserDao) : SearchableDataSourceFactory<User>(dao) {
 
     companion object {
         const val KEY_LOGIN = "login"
@@ -21,5 +21,16 @@ internal class UserSourceFactory(dao: UserDao) : SearchableDataSourceFactory<Use
         val avatarQuery = params[KEY_AVATAR]?.filterIsInstance<String>()?.get(0) ?: "%"
 
         return (dao as UserDao).getUsersDataSource(loginQuery, avatarQuery)
+    }
+
+    override suspend fun onDataLoaded(result: List<User>, force: Boolean): Boolean {
+        return try {
+            dao.insertAll(result)
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+
     }
 }

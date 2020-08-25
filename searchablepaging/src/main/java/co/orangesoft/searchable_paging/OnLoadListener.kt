@@ -13,16 +13,16 @@ class OnLoadListener(private val coroutineContext: CoroutineContext = Dispatcher
     private var onFinish: (() -> Unit)? = null
     private var onError: ((Throwable) -> Unit)? = null
 
-    fun onStartLoad(listener: () -> Unit){
+    fun onStartLoad(listener: () -> Unit) {
         onStart = listener
     }
 
-    fun onFinishLoad(listener: () -> Unit){
+    fun onFinishLoad(listener: () -> Unit) {
         onFinish = listener
     }
 
 
-    fun onErrorLoad(listener: (Throwable) -> Unit){
+    fun onErrorLoad(listener: (Throwable) -> Unit) {
         onError = listener
     }
 

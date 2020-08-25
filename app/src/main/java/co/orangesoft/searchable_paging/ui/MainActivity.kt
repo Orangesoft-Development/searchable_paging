@@ -1,12 +1,14 @@
 package co.orangesoft.searchable_paging.ui
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.paging.PagedList
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
+import co.orangesoft.searchable_paging.OnLoadListener
 import co.orangesoft.searchable_paging.R
 import co.orangesoft.searchable_paging.api.ApiModuleImpl
 import co.orangesoft.searchable_paging.extensions.UserSourceFactory
@@ -16,6 +18,7 @@ import co.orangesoft.searchable_paging.models.User
 import co.orangesoft.searchable_paging.repositories.AppDatabaseRepository
 import co.orangesoft.searchable_paging.repositories.UserListRepository
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 
 class MainActivity : AppCompatActivity() {
@@ -42,6 +45,18 @@ class MainActivity : AppCompatActivity() {
         UserListRepository(apiService, UserSourceFactory(userDao), Job())
     }
 
+    private val loadListener = OnLoadListener().apply {
+        onStartLoad {
+            //Do stuff
+        }
+        onFinishLoad {
+            //Do stuff
+        }
+        onErrorLoad {
+            //Do stuff
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -58,7 +73,9 @@ class MainActivity : AppCompatActivity() {
             layoutManager = LinearLayoutManager(this@MainActivity)
             adapter = userPagedListAdapter
         }
+
         getPagedListLiveData().observe(this, Observer { userPagedListAdapter.submitList(it) })
+        userListRepository.setOnLoadListener(loadListener)
 
         val filterParams: HashMap<String, List<Any>> = hashMapOf()
         filterParams[KEY_LOGIN] = listOf("my")
