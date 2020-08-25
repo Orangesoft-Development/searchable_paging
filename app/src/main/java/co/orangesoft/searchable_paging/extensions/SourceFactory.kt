@@ -14,7 +14,7 @@ internal class UserSourceFactory(private val dao: UserDao) : SearchableDataSourc
     }
 
     override fun getDataSource(
-        dao: SearchableDao,
+        dao: SearchableDao<User>,
         params: HashMap<String, List<Any>>
     ): DataSource.Factory<Int, User> {
         val loginQuery = params[KEY_LOGIN]?.filterIsInstance<String>()?.get(0) ?: "%"

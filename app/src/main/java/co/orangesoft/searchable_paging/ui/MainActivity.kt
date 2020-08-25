@@ -9,6 +9,7 @@ import androidx.paging.PagedList
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import co.orangesoft.searchable_paging.OnLoadListener
+import co.orangesoft.searchable_paging.DatabaseTransactionCallback
 import co.orangesoft.searchable_paging.R
 import co.orangesoft.searchable_paging.api.ApiModuleImpl
 import co.orangesoft.searchable_paging.extensions.UserSourceFactory
@@ -18,7 +19,6 @@ import co.orangesoft.searchable_paging.models.User
 import co.orangesoft.searchable_paging.repositories.AppDatabaseRepository
 import co.orangesoft.searchable_paging.repositories.UserListRepository
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 
 class MainActivity : AppCompatActivity() {
@@ -74,12 +74,39 @@ class MainActivity : AppCompatActivity() {
             adapter = userPagedListAdapter
         }
 
+        val testUser = User(50840, "MY_LOGIN")
+        val testUser2 = User(90000, "MY_LOGIN2")
+
+        fab_insert.setOnClickListener {
+            userListRepository.insertItems(testUser, testUser2, callback = object : DatabaseTransactionCallback {
+                override fun onSuccess() {
+                    Toast.makeText(this@MainActivity, "User inserted", Toast.LENGTH_SHORT).show()
+                }
+
+                override fun onError(exception: Throwable) {
+                    Toast.makeText(this@MainActivity, exception.message, Toast.LENGTH_SHORT).show()
+                }
+            })
+        }
+
+        fab_delete.setOnClickListener {
+            userListRepository.deleteItems(testUser, testUser2, callback = object : DatabaseTransactionCallback {
+                override fun onSuccess() {
+                    Toast.makeText(this@MainActivity, "User deleted", Toast.LENGTH_SHORT).show()
+                }
+
+                override fun onError(exception: Throwable) {
+                    Toast.makeText(this@MainActivity, exception.message, Toast.LENGTH_SHORT).show()
+                }
+            })
+        }
+
         getPagedListLiveData().observe(this, Observer { userPagedListAdapter.submitList(it) })
         userListRepository.setOnLoadListener(loadListener)
 
         val filterParams: HashMap<String, List<Any>> = hashMapOf()
         filterParams[KEY_LOGIN] = listOf("my")
-        filterParams[KEY_AVATAR] = listOf("avatars1")
-        userListRepository.setQueries(true, filterParams)
+        //filterParams[KEY_AVATAR] = listOf("avatars1")
+        //userListRepository.setQueries(true, filterParams)
     }
 }

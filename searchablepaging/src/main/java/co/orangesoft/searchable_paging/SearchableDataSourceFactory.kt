@@ -2,6 +2,9 @@ package co.orangesoft.searchable_paging
 
 import androidx.lifecycle.MutableLiveData
 import androidx.paging.DataSource
+import kotlinx.coroutines.runBlocking
+import java.util.*
+import kotlin.collections.HashMap
 
 /**
  * Base abstract class for searchable DataSource. Create your own source factory class and extend it from
@@ -9,7 +12,7 @@ import androidx.paging.DataSource
  *
  * @param dao - dao, which implement SearchableDao
  */
-abstract class SearchableDataSourceFactory<DB>(private val dao: SearchableDao) : DataSource.Factory<Int, DB>() {
+abstract class SearchableDataSourceFactory<DB>(private val dao: SearchableDao<DB>) : DataSource.Factory<Int, DB>() {
 
     private val mutableLiveData: MutableLiveData<DataSource<Int, DB>> = MutableLiveData()
     private var params: HashMap<String, List<Any>> = hashMapOf()
@@ -23,6 +26,11 @@ abstract class SearchableDataSourceFactory<DB>(private val dao: SearchableDao) :
         return getDataSource(dao, params).create().apply {
             getData().postValue(this)
         }
+    }
+
+    //TODO Temp method
+    fun getDao(): SearchableDao<DB> {
+        return dao
     }
 
     /**
@@ -96,7 +104,7 @@ abstract class SearchableDataSourceFactory<DB>(private val dao: SearchableDao) :
      *
      * @return filtered DataSource
      */
-    abstract fun getDataSource(dao: SearchableDao, params: HashMap<String, List<Any>>): DataSource.Factory<Int, DB>
+    abstract fun getDataSource(dao: SearchableDao<DB>, params: HashMap<String, List<Any>>): DataSource.Factory<Int, DB>
 
     /**
      * Do whatever you want with the data from server. For instance, insert result into database

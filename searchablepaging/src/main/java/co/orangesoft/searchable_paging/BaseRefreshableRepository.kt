@@ -4,7 +4,6 @@ import androidx.lifecycle.LiveData
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import kotlinx.coroutines.*
-import java.lang.Exception
 import java.lang.ref.WeakReference
 import kotlin.coroutines.CoroutineContext
 
@@ -133,6 +132,44 @@ abstract class BaseRefreshableRepository<DB>(
         }
     }
 
+    fun insertItems(vararg item: DB, callback: DatabaseTransactionCallback? = null) {
+        launch {
+            try {
+                withContext(coroutineContext) {
+                    val success = insertItemsApi(listOf(*item))
+                    onItemsInsertApiCompleted(success, listOf(*item))
+                }
+                launch(Dispatchers.Main) {
+                    callback?.onSuccess()
+                }
+
+            } catch (exception: Exception) {
+                launch(Dispatchers.Main) {
+                    callback?.onError(exception)
+                }
+            }
+        }
+    }
+
+    fun deleteItems(vararg item: DB, callback: DatabaseTransactionCallback? = null) {
+        launch {
+            try {
+                withContext(coroutineContext) {
+                    val success = deleteItemsApi(listOf(*item))
+                    onItemsDeleteApiCompleted(success, listOf(*item))
+                }
+                launch(Dispatchers.Main) {
+                    callback?.onSuccess()
+                }
+
+            } catch (exception: Exception) {
+                launch(Dispatchers.Main) {
+                    callback?.onError(exception)
+                }
+            }
+        }
+    }
+
     /**
      * Get values of searching parameter
      * @param param - searching parameter
@@ -221,6 +258,14 @@ abstract class BaseRefreshableRepository<DB>(
      * @return response from server request
      */
     protected abstract suspend fun loadData(page: Int, limit: Int, params: Map<String, List<Any>>): List<DB>
+
+    protected abstract suspend fun insertItemsApi(items: List<DB>): Boolean
+
+    protected abstract suspend fun deleteItemsApi(items: List<DB>): Boolean
+
+    protected abstract suspend fun onItemsInsertApiCompleted(success: Boolean, insertedItems: List<DB>)
+
+    protected abstract suspend fun onItemsDeleteApiCompleted(success: Boolean, deletedItems: List<DB>)
 
     private class InvalidQueryKeyException(message: String) : Exception(message)
 

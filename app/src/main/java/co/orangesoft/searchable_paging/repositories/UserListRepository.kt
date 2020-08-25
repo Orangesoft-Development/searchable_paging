@@ -37,5 +37,27 @@ class UserListRepository(private val apiService: ApiService, factory: Searchable
 
         return apiService.getSearchUsers(limit, page.toLong(), resultQuery?.toString()).items
     }
+
+    override suspend fun insertItemsApi(items: List<User>): Boolean {
+        return true
+    }
+
+    override suspend fun deleteItemsApi(items: List<User>): Boolean {
+        return true
+    }
+
+    override suspend fun onItemsInsertApiCompleted(
+        success: Boolean,
+        insertedItems: List<User>
+    ) {
+        dataSource.getDao().updateOrInsert(*insertedItems.toTypedArray())
+    }
+
+    override suspend fun onItemsDeleteApiCompleted(
+        success: Boolean,
+        deletedItems: List<User>
+    ) {
+        dataSource.getDao().delete(*deletedItems.toTypedArray())
+    }
 }
 
