@@ -133,15 +133,21 @@ abstract class BaseRefreshableRepository<DB>(
     }
 
     fun insertItems(vararg item: DB, callback: DatabaseTransactionCallback? = null) {
+        
         launch {
             try {
-                withContext(coroutineContext) {
-                    val success = insertItemsApi(listOf(*item))
-                    onItemsInsertApiCompleted(success, listOf(*item))
+                val success = withContext(coroutineContext) {
+                    val successResponse = insertItemsApi(listOf(*item))
+                    return@withContext dataSource.onItemsInserted(successResponse, listOf(*item))
                 }
-                launch(Dispatchers.Main) {
-                    callback?.onSuccess()
+                if (success) {
+                    launch(Dispatchers.Main) {
+                        callback?.onSuccess()
+                    }
+                } else {
+                    throw DatabaseTransactionException(DATABASE_EXCEPTION_MESSAGE)
                 }
+
 
             } catch (exception: Exception) {
                 launch(Dispatchers.Main) {
@@ -154,12 +160,16 @@ abstract class BaseRefreshableRepository<DB>(
     fun deleteItems(vararg item: DB, callback: DatabaseTransactionCallback? = null) {
         launch {
             try {
-                withContext(coroutineContext) {
-                    val success = deleteItemsApi(listOf(*item))
-                    onItemsDeleteApiCompleted(success, listOf(*item))
+                val success =  withContext(coroutineContext) {
+                    val successResponse = deleteItemsApi(listOf(*item))
+                    return@withContext dataSource.onItemsDeleted(successResponse, listOf(*item))
                 }
-                launch(Dispatchers.Main) {
-                    callback?.onSuccess()
+                if (success) {
+                    launch(Dispatchers.Main) {
+                        callback?.onSuccess()
+                    }
+                } else {
+                    throw DatabaseTransactionException(DATABASE_EXCEPTION_MESSAGE)
                 }
 
             } catch (exception: Exception) {
@@ -262,10 +272,6 @@ abstract class BaseRefreshableRepository<DB>(
     protected abstract suspend fun insertItemsApi(items: List<DB>): Boolean
 
     protected abstract suspend fun deleteItemsApi(items: List<DB>): Boolean
-
-    protected abstract suspend fun onItemsInsertApiCompleted(success: Boolean, insertedItems: List<DB>)
-
-    protected abstract suspend fun onItemsDeleteApiCompleted(success: Boolean, deletedItems: List<DB>)
 
     private class InvalidQueryKeyException(message: String) : Exception(message)
 

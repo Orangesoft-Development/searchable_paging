@@ -28,11 +28,6 @@ abstract class SearchableDataSourceFactory<DB>(private val dao: SearchableDao<DB
         }
     }
 
-    //TODO Temp method
-    fun getDao(): SearchableDao<DB> {
-        return dao
-    }
-
     /**
      * Get live data of DataSource
      * override to use your own
@@ -114,4 +109,8 @@ abstract class SearchableDataSourceFactory<DB>(private val dao: SearchableDao<DB
      * @return boolean value for success or failure result
      */
     abstract suspend fun onDataLoaded(result: List<DB>, force: Boolean): Boolean
+
+    abstract suspend fun onItemsInserted(success: Boolean, insertedItems: List<DB>): Boolean
+
+    abstract suspend fun onItemsDeleted(success: Boolean, deletedItems: List<DB>): Boolean
 }

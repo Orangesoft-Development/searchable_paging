@@ -45,19 +45,5 @@ class UserListRepository(private val apiService: ApiService, factory: Searchable
     override suspend fun deleteItemsApi(items: List<User>): Boolean {
         return true
     }
-
-    override suspend fun onItemsInsertApiCompleted(
-        success: Boolean,
-        insertedItems: List<User>
-    ) {
-        dataSource.getDao().updateOrInsert(*insertedItems.toTypedArray())
-    }
-
-    override suspend fun onItemsDeleteApiCompleted(
-        success: Boolean,
-        deletedItems: List<User>
-    ) {
-        dataSource.getDao().delete(*deletedItems.toTypedArray())
-    }
 }
 

@@ -31,6 +31,25 @@ internal class UserSourceFactory(private val dao: UserDao) : SearchableDataSourc
             e.printStackTrace()
             false
         }
+    }
 
+    override suspend fun onItemsInserted(success: Boolean, insertedItems: List<User>): Boolean {
+        return try {
+            dao.updateOrInsert(*insertedItems.toTypedArray())
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+    }
+
+    override suspend fun onItemsDeleted(success: Boolean, deletedItems: List<User>): Boolean {
+        return try {
+            dao.delete(*deletedItems.toTypedArray())
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
     }
 }
