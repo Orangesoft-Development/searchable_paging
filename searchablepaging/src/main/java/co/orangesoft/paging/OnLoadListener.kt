@@ -1,12 +1,9 @@
-package co.orangesoft.searchable_paging
+package co.orangesoft.paging
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlin.coroutines.CoroutineContext
 
-/**
- * Created by set.
- */
 class OnLoadListener(private val coroutineContext: CoroutineContext = Dispatchers.Main) {
 
     private var onStart: (() -> Unit)? = null

@@ -1,10 +1,11 @@
-package co.orangesoft.searchable_paging
+package co.orangesoft.paging
 
 import androidx.lifecycle.LiveData
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import kotlinx.coroutines.*
 import java.lang.ref.WeakReference
+import java.sql.SQLException
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -35,7 +36,6 @@ abstract class BaseRefreshableRepository<DB>(
         const val DEFAULT_INITIAL_PAGE: Int = 0
 
         const val INVALID_QUERY_KEY_MESSAGE_ADVICE = "To use this key you should handle it in validateQueryKey() method"
-        const val DATABASE_EXCEPTION_MESSAGE = "Something was going wrong during database transaction"
     }
 
     override val coroutineContext: CoroutineContext by lazy { Dispatchers.IO + SupervisorJob(parentJob) }
@@ -48,20 +48,20 @@ abstract class BaseRefreshableRepository<DB>(
         override fun onZeroItemsLoaded() {
             if (isFirstLoad) {
                 isFirstLoad = false
-                launch { getItem() }
+                launch { loadItems() }
             }
         }
 
         override fun onItemAtFrontLoaded(itemAtFront: DB) {
             if (isFirstLoad) {
-                launch { getItem(true) }
+                launch { loadItems(true) }
                 isFirstLoad = false
             }
         }
 
         override fun onItemAtEndLoaded(itemAtEnd: DB) {
             if(PAGE > 0) {
-                launch { getItem() }
+                launch { loadItems() }
             }
         }
     }
@@ -97,7 +97,7 @@ abstract class BaseRefreshableRepository<DB>(
      * @param force - set true if you want to reload data anyway
      */
     override fun refresh(force: Boolean) {
-        launch { getItem(force) }
+        launch { loadItems(force) }
     }
 
     /**
@@ -108,7 +108,7 @@ abstract class BaseRefreshableRepository<DB>(
         loadListener = WeakReference(listener)
     }
 
-    private suspend fun getItem(force: Boolean = false) {
+    private suspend fun loadItems(force: Boolean = false) {
 
         if (force) {
             PAGE = INITIAL_PAGE
@@ -118,13 +118,9 @@ abstract class BaseRefreshableRepository<DB>(
 
         try {
             val result = loadData(PAGE, PAGE_SIZE, dataSource.getQueries())
-            val success = dataSource.onDataLoaded(result, force)
+            dataSource.onDataLoaded(result, force)
             PAGE++
-            if (success) {
-                loadListener?.get()?.invoke(true)
-            } else {
-                throw DatabaseTransactionException(DATABASE_EXCEPTION_MESSAGE)
-            }
+            loadListener?.get()?.invoke(true)
 
         } catch (e: Exception) {
             e.printStackTrace()
@@ -132,50 +128,37 @@ abstract class BaseRefreshableRepository<DB>(
         }
     }
 
-    fun insertItems(vararg item: DB, callback: DatabaseTransactionCallback? = null) {
-        
-        launch {
-            try {
-                val success = withContext(coroutineContext) {
-                    val successResponse = insertItemsApi(listOf(*item))
-                    return@withContext dataSource.onItemsInserted(successResponse, listOf(*item))
-                }
-                if (success) {
-                    launch(Dispatchers.Main) {
-                        callback?.onSuccess()
-                    }
-                } else {
-                    throw DatabaseTransactionException(DATABASE_EXCEPTION_MESSAGE)
-                }
-
-
-            } catch (exception: Exception) {
-                launch(Dispatchers.Main) {
-                    callback?.onError(exception)
-                }
-            }
-        }
+    fun insertItems(vararg item: DB, callback: TransactionCallback? = null) {
+        itemsAction(ItemsActionType.INSERT, *item, callback = callback)
     }
 
-    fun deleteItems(vararg item: DB, callback: DatabaseTransactionCallback? = null) {
+    fun deleteItems(vararg item: DB, callback: TransactionCallback? = null) {
+        itemsAction(ItemsActionType.DELETE, *item, callback = callback)
+    }
+
+    private fun itemsAction(itemsActionType: ItemsActionType,
+                            vararg item: DB,
+                            callback: TransactionCallback? = null) {
         launch {
             try {
-                val success =  withContext(coroutineContext) {
-                    val successResponse = deleteItemsApi(listOf(*item))
-                    return@withContext dataSource.onItemsDeleted(successResponse, listOf(*item))
-                }
-                if (success) {
-                    launch(Dispatchers.Main) {
-                        callback?.onSuccess()
+                withContext(coroutineContext) {
+                    val responseModel = when (itemsActionType) {
+                        ItemsActionType.INSERT -> insertItemsApi(listOf(*item))
+                        ItemsActionType.DELETE -> deleteItemsApi(listOf(*item))
                     }
-                } else {
-                    throw DatabaseTransactionException(DATABASE_EXCEPTION_MESSAGE)
-                }
+                    if (!responseModel.success) {
+                        callback?.invoke(Exception(responseModel.errorMessage))
+                    }
 
-            } catch (exception: Exception) {
-                launch(Dispatchers.Main) {
-                    callback?.onError(exception)
+                    when (itemsActionType) {
+                        ItemsActionType.INSERT -> dataSource.onItemsInserted(responseModel.success, listOf(*item))
+                        ItemsActionType.DELETE -> dataSource.onItemsDeleted(responseModel.success, listOf(*item))
+                    }
                 }
+                callback?.invoke()
+
+            } catch (sqlException: SQLException) {
+                callback?.invoke(sqlException)
             }
         }
     }
@@ -269,11 +252,16 @@ abstract class BaseRefreshableRepository<DB>(
      */
     protected abstract suspend fun loadData(page: Int, limit: Int, params: Map<String, List<Any>>): List<DB>
 
-    protected abstract suspend fun insertItemsApi(items: List<DB>): Boolean
+    protected abstract suspend fun insertItemsApi(items: Collection<DB>): ResponseModel
 
-    protected abstract suspend fun deleteItemsApi(items: List<DB>): Boolean
+    protected abstract suspend fun deleteItemsApi(items: Collection<DB>): ResponseModel
 
     private class InvalidQueryKeyException(message: String) : Exception(message)
 
-    private class DatabaseTransactionException(message: String) : Exception(message)
+    protected data class ResponseModel(val success: Boolean, val errorMessage: String? = null)
+
+    private enum class ItemsActionType {
+        INSERT,
+        DELETE
+    }
 }

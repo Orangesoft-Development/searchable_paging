@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import co.orangesoft.searchable_paging.dao.UserDao
+import co.orangesoft.searchable_paging.database.UserDao
 import co.orangesoft.searchable_paging.models.User
 
 @Database(

@@ -1,9 +1,8 @@
-package co.orangesoft.searchable_paging
+package co.orangesoft.paging
 
 import androidx.lifecycle.MutableLiveData
 import androidx.paging.DataSource
-import kotlinx.coroutines.runBlocking
-import java.util.*
+import java.sql.SQLException
 import kotlin.collections.HashMap
 
 /**
@@ -99,7 +98,7 @@ abstract class SearchableDataSourceFactory<DB>(private val dao: SearchableDao<DB
      *
      * @return filtered DataSource
      */
-    abstract fun getDataSource(dao: SearchableDao<DB>, params: HashMap<String, List<Any>>): DataSource.Factory<Int, DB>
+    protected abstract fun getDataSource(dao: SearchableDao<DB>, params: HashMap<String, List<Any>>): DataSource.Factory<Int, DB>
 
     /**
      * Do whatever you want with the data from server. For instance, insert result into database
@@ -108,9 +107,11 @@ abstract class SearchableDataSourceFactory<DB>(private val dao: SearchableDao<DB
      *
      * @return boolean value for success or failure result
      */
-    abstract suspend fun onDataLoaded(result: List<DB>, force: Boolean): Boolean
+    abstract suspend fun onDataLoaded(result: List<DB>, force: Boolean)
 
-    abstract suspend fun onItemsInserted(success: Boolean, insertedItems: List<DB>): Boolean
+    @Throws(SQLException::class)
+    abstract suspend fun onItemsInserted(success: Boolean, insertedItems: Collection<DB>)
 
-    abstract suspend fun onItemsDeleted(success: Boolean, deletedItems: List<DB>): Boolean
+    @Throws(SQLException::class)
+    abstract suspend fun onItemsDeleted(success: Boolean, deletedItems: Collection<DB>)
 }

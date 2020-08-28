@@ -1,10 +1,6 @@
-package co.orangesoft.searchable_paging
+package co.orangesoft.paging
 
-/**
- * Created by set.
- */
 interface SearchableDao<T> {
-
     suspend fun updateOrInsert(vararg item: T)
 
     suspend fun delete(vararg item: T)

@@ -8,13 +8,12 @@ import androidx.lifecycle.Observer
 import androidx.paging.PagedList
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
-import co.orangesoft.searchable_paging.OnLoadListener
-import co.orangesoft.searchable_paging.DatabaseTransactionCallback
+import co.orangesoft.paging.OnLoadListener
+import co.orangesoft.paging.TransactionCallback
 import co.orangesoft.searchable_paging.R
 import co.orangesoft.searchable_paging.api.ApiModuleImpl
-import co.orangesoft.searchable_paging.extensions.UserSourceFactory
-import co.orangesoft.searchable_paging.extensions.UserSourceFactory.Companion.KEY_AVATAR
-import co.orangesoft.searchable_paging.extensions.UserSourceFactory.Companion.KEY_LOGIN
+import co.orangesoft.searchable_paging.database.UserSourceFactory
+import co.orangesoft.searchable_paging.database.UserSourceFactory.Companion.KEY_LOGIN
 import co.orangesoft.searchable_paging.models.User
 import co.orangesoft.searchable_paging.repositories.AppDatabaseRepository
 import co.orangesoft.searchable_paging.repositories.UserListRepository
@@ -42,18 +41,19 @@ class MainActivity : AppCompatActivity() {
     private val userListRepository by lazy {
         val userDao = AppDatabaseRepository.buildDatabase(this).userDao()
         val apiService = ApiModuleImpl().apiService
-        UserListRepository(apiService, UserSourceFactory(userDao), Job())
+        UserListRepository(apiService,
+            UserSourceFactory(userDao), Job())
     }
 
     private val loadListener = OnLoadListener().apply {
         onStartLoad {
-            //Do stuff
+            //Do your stuff before load
         }
         onFinishLoad {
-            //Do stuff
+            //Do your stuff after load
         }
         onErrorLoad {
-            //Do stuff
+            //Do your stuff after exception
         }
     }
 
@@ -78,27 +78,37 @@ class MainActivity : AppCompatActivity() {
         val testUser2 = User(90000, "MY_LOGIN2")
 
         fab_insert.setOnClickListener {
-            userListRepository.insertItems(testUser, testUser2, callback = object : DatabaseTransactionCallback {
-                override fun onSuccess() {
-                    Toast.makeText(this@MainActivity, "User inserted", Toast.LENGTH_SHORT).show()
-                }
-
-                override fun onError(exception: Throwable) {
-                    Toast.makeText(this@MainActivity, exception.message, Toast.LENGTH_SHORT).show()
-                }
-            })
+            userListRepository.insertItems(
+                testUser,
+                testUser2,
+                callback = TransactionCallback().apply {
+                    onSuccess {
+                        Toast.makeText(this@MainActivity, "User inserted", Toast.LENGTH_SHORT).show()
+                    }
+                    onNetworkError { exception ->
+                        Toast.makeText(this@MainActivity, exception.message, Toast.LENGTH_SHORT).show()
+                    }
+                    onDatabaseError { exception ->
+                        Toast.makeText(this@MainActivity, exception.message, Toast.LENGTH_SHORT).show()
+                    }
+                })
         }
 
         fab_delete.setOnClickListener {
-            userListRepository.deleteItems(testUser, testUser2, callback = object : DatabaseTransactionCallback {
-                override fun onSuccess() {
-                    Toast.makeText(this@MainActivity, "User deleted", Toast.LENGTH_SHORT).show()
-                }
-
-                override fun onError(exception: Throwable) {
-                    Toast.makeText(this@MainActivity, exception.message, Toast.LENGTH_SHORT).show()
-                }
-            })
+            userListRepository.deleteItems(
+                testUser,
+                testUser2,
+                callback = TransactionCallback().apply {
+                    onSuccess {
+                        Toast.makeText(this@MainActivity, "User deleted", Toast.LENGTH_SHORT).show()
+                    }
+                    onNetworkError { exception ->
+                        Toast.makeText(this@MainActivity, exception.message, Toast.LENGTH_SHORT).show()
+                    }
+                    onDatabaseError { exception ->
+                        Toast.makeText(this@MainActivity, exception.message, Toast.LENGTH_SHORT).show()
+                    }
+                })
         }
 
         getPagedListLiveData().observe(this, Observer { userPagedListAdapter.submitList(it) })
@@ -107,6 +117,6 @@ class MainActivity : AppCompatActivity() {
         val filterParams: HashMap<String, List<Any>> = hashMapOf()
         filterParams[KEY_LOGIN] = listOf("my")
         //filterParams[KEY_AVATAR] = listOf("avatars1")
-        //userListRepository.setQueries(true, filterParams)
+        userListRepository.setQueries(true, filterParams)
     }
 }

@@ -1,8 +1,8 @@
-package co.orangesoft.searchable_paging.dao
+package co.orangesoft.searchable_paging.database
 
 import androidx.paging.DataSource
 import androidx.room.*
-import co.orangesoft.searchable_paging.SearchableDao
+import co.orangesoft.paging.SearchableDao
 import co.orangesoft.searchable_paging.models.User
 
 @Dao

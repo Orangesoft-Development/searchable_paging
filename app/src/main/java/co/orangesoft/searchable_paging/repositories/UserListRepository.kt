@@ -1,10 +1,10 @@
 package co.orangesoft.searchable_paging.repositories
 
-import co.orangesoft.searchable_paging.BaseRefreshableRepository
-import co.orangesoft.searchable_paging.SearchableDataSourceFactory
+import co.orangesoft.paging.BaseRefreshableRepository
+import co.orangesoft.paging.SearchableDataSourceFactory
 import co.orangesoft.searchable_paging.api.ApiService
-import co.orangesoft.searchable_paging.extensions.UserSourceFactory.Companion.KEY_AVATAR
-import co.orangesoft.searchable_paging.extensions.UserSourceFactory.Companion.KEY_LOGIN
+import co.orangesoft.searchable_paging.database.UserSourceFactory.Companion.KEY_AVATAR
+import co.orangesoft.searchable_paging.database.UserSourceFactory.Companion.KEY_LOGIN
 import co.orangesoft.searchable_paging.models.User
 import kotlinx.coroutines.Job
 import java.lang.StringBuilder
@@ -38,12 +38,14 @@ class UserListRepository(private val apiService: ApiService, factory: Searchable
         return apiService.getSearchUsers(limit, page.toLong(), resultQuery?.toString()).items
     }
 
-    override suspend fun insertItemsApi(items: List<User>): Boolean {
-        return true
+    override suspend fun insertItemsApi(items: Collection<User>): ResponseModel {
+        //TODO PING google; return success result
+        return ResponseModel(success = true)
     }
 
-    override suspend fun deleteItemsApi(items: List<User>): Boolean {
-        return true
+    override suspend fun deleteItemsApi(items: Collection<User>): ResponseModel {
+        //TODO PING google; return false result
+        return ResponseModel(success = false, errorMessage = "Something was going wrong")
     }
 }
 

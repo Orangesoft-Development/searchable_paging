@@ -1,8 +1,5 @@
-package co.orangesoft.searchable_paging
+package co.orangesoft.paging
 
-/**
- * Created by set.
- */
 interface SearchableRepository<DB> : BaseRepository<DB> {
 
     fun getQuery(param: String): List<Any>
