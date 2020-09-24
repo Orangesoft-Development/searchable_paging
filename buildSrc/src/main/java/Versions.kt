@@ -31,4 +31,5 @@ object Versions {
     const val junit = "1.1.1"
     const val core_testing = "1.2.0"
     const val arch_core_testing = "2.0.1"
+    const val espresso = "3.3.0"
 }

@@ -48,5 +48,6 @@ object Depends {
         const val junit = "androidx.test.ext:junit:${Versions.junit}"
         const val core_testing = "androidx.test:core:${Versions.core_testing}"
         const val arch_core_testing = "androidx.arch.core:core-testing:${Versions.arch_core_testing}"
+        const val espresso = "androidx.test.espresso:espresso-core:${Versions.espresso}"
     }
 }

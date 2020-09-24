@@ -33,9 +33,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private val userPagedListAdapter by lazy {
-        UserPagedListAdapter(
-            userDiffUtilCallback
-        )
+        UserPagedListAdapter(userDiffUtilCallback)
     }
 
     private val userListRepository by lazy {

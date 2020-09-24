@@ -4,11 +4,17 @@ import android.content.Intent
 import androidx.arch.core.executor.testing.CountingTaskExecutorRule
 import androidx.recyclerview.widget.RecyclerView
 import androidx.test.core.app.ApplicationProvider
-import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.action.ViewActions.click
+import androidx.test.espresso.assertion.ViewAssertions
+import androidx.test.espresso.matcher.ViewMatchers
+import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner
+import androidx.test.platform.app.InstrumentationRegistry
 import co.orangesoft.searchable_paging.ui.MainActivity
 import org.hamcrest.CoreMatchers
 import org.hamcrest.MatcherAssert
+import org.hamcrest.Matchers
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -60,5 +66,59 @@ class MainActivityTest {
             return  //already loaded
         }
         MatcherAssert.assertThat(latch.await(10, TimeUnit.SECONDS), CoreMatchers.`is`(true))
+    }
+
+    @Test
+    @Throws(InterruptedException::class, TimeoutException::class)
+    fun insertItems() {
+        val intent = Intent(ApplicationProvider.getApplicationContext(), MainActivity::class.java)
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        val activity = InstrumentationRegistry.getInstrumentation().startActivitySync(intent)
+
+        onView(Matchers.allOf(withId(R.id.recyclerView), ViewMatchers.withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE)))
+            .check(ViewAssertions.matches(ViewMatchers.isDisplayed()))
+        testRule.drainTasks(10, TimeUnit.SECONDS)
+
+        val recyclerView: RecyclerView = activity.findViewById(R.id.recyclerView)
+
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+        waitForAdapterChange(recyclerView)
+
+        val itemCountBeforeInsert = recyclerView.adapter?.itemCount ?: 0
+
+        onView(Matchers.allOf(withId(R.id.fab_insert), ViewMatchers.withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE)))
+            .check(ViewAssertions.matches(ViewMatchers.isDisplayed()))
+        onView(withId(R.id.fab_insert)).perform(click())
+
+        Thread.sleep(3000)
+
+        MatcherAssert.assertThat(recyclerView.adapter?.itemCount ?: 0 > itemCountBeforeInsert, CoreMatchers.`is`(true))
+    }
+
+    @Test
+    @Throws(InterruptedException::class, TimeoutException::class)
+    fun deleteItems() {
+        val intent = Intent(ApplicationProvider.getApplicationContext(), MainActivity::class.java)
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        val activity = InstrumentationRegistry.getInstrumentation().startActivitySync(intent)
+
+        onView(Matchers.allOf(withId(R.id.recyclerView), ViewMatchers.withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE)))
+            .check(ViewAssertions.matches(ViewMatchers.isDisplayed()))
+        testRule.drainTasks(10, TimeUnit.SECONDS)
+
+        val recyclerView: RecyclerView = activity.findViewById(R.id.recyclerView)
+
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+        waitForAdapterChange(recyclerView)
+
+        val itemCountBeforeDelete = recyclerView.adapter?.itemCount ?: 0
+
+        onView(Matchers.allOf(withId(R.id.fab_delete), ViewMatchers.withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE)))
+            .check(ViewAssertions.matches(ViewMatchers.isDisplayed()))
+        onView(withId(R.id.fab_delete)).perform(click())
+
+        Thread.sleep(3000)
+
+        MatcherAssert.assertThat(recyclerView.adapter?.itemCount ?: 0 < itemCountBeforeDelete, CoreMatchers.`is`(true))
     }
 }

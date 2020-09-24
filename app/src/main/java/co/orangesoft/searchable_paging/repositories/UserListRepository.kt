@@ -7,6 +7,7 @@ import co.orangesoft.searchable_paging.database.UserSourceFactory.Companion.KEY_
 import co.orangesoft.searchable_paging.database.UserSourceFactory.Companion.KEY_LOGIN
 import co.orangesoft.searchable_paging.models.User
 import kotlinx.coroutines.Job
+import retrofit2.Response
 import java.lang.StringBuilder
 
 class UserListRepository(private val apiService: ApiService, factory: SearchableDataSourceFactory<User>, parentJob: Job? = null)
@@ -39,13 +40,12 @@ class UserListRepository(private val apiService: ApiService, factory: Searchable
     }
 
     override suspend fun insertItemsApi(items: Collection<User>): ResponseModel {
-        //TODO PING google; return success result
-        return ResponseModel(success = true)
+        val response = apiService.insertUsers(items)
+        return ResponseModel(success = response.isSuccessful, errorMessage = response.message())
     }
 
     override suspend fun deleteItemsApi(items: Collection<User>): ResponseModel {
-        //TODO PING google; return false result
-        return ResponseModel(success = false, errorMessage = "Something was going wrong")
+        val response = apiService.deleteUsers(items)
+        return ResponseModel(success = response.isSuccessful, errorMessage = response.message())
     }
 }
-
