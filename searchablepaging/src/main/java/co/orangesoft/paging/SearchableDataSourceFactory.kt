@@ -109,9 +109,19 @@ abstract class SearchableDataSourceFactory<DB>(private val dao: SearchableDao<DB
      */
     abstract suspend fun onDataLoaded(result: List<DB>, force: Boolean)
 
+    /**
+     * Do your stuff with items which was inserted on backend. For instance, insert these items into database
+     * @param success - result of insert items request
+     * @param insertedItems - list of inserted items
+     */
     @Throws(SQLException::class)
     abstract suspend fun onItemsInserted(success: Boolean, insertedItems: Collection<DB>)
 
+    /**
+     * Do your stuff with items which was deleted on backend. For instance, remove these items from database
+     * @param success - result of delete items request
+     * @param deletedItems - list of deleted items
+     */
     @Throws(SQLException::class)
     abstract suspend fun onItemsDeleted(success: Boolean, deletedItems: Collection<DB>)
 }

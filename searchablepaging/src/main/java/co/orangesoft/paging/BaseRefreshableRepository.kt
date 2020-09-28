@@ -128,10 +128,20 @@ abstract class BaseRefreshableRepository<DB>(
         }
     }
 
+    /**
+     * Call this method for inserting items
+     * @param item - array of items, which will be inserted
+     * @param callback - transaction callback during insert items process
+     */
     fun insertItems(vararg item: DB, callback: TransactionCallback? = null) {
         itemsAction(ItemsActionType.INSERT, *item, callback = callback)
     }
 
+    /**
+     * Call this method for delete items
+     * @param item - array of items, which will be removed
+     * @param callback - transaction callback during delete items process
+     */
     fun deleteItems(vararg item: DB, callback: TransactionCallback? = null) {
         itemsAction(ItemsActionType.DELETE, *item, callback = callback)
     }
@@ -252,8 +262,20 @@ abstract class BaseRefreshableRepository<DB>(
      */
     protected abstract suspend fun loadData(page: Int, limit: Int, params: Map<String, List<Any>>): List<DB>
 
+    /**
+     * In this method do your insert items request to backend
+     * @param items - items, which should be inserted into backend
+     *
+     * @return response model from server request with success flag and error message
+     */
     protected abstract suspend fun insertItemsApi(items: Collection<DB>): ResponseModel
 
+    /**
+     * In this method do your delete items request to backend
+     * @param items - items, which should be removed from backend
+     *
+     * @return response model from server request with success flag and error message
+     */
     protected abstract suspend fun deleteItemsApi(items: Collection<DB>): ResponseModel
 
     private class InvalidQueryKeyException(message: String) : Exception(message)
