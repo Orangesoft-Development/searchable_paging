@@ -151,19 +151,17 @@ abstract class BaseRefreshableRepository<DB>(
                             callback: TransactionCallback? = null) {
         launch {
             try {
-                withContext(coroutineContext) {
-                    val responseModel = when (itemsActionType) {
-                        ItemsActionType.INSERT -> insertItemsApi(listOf(*item))
-                        ItemsActionType.DELETE -> deleteItemsApi(listOf(*item))
-                    }
-                    if (!responseModel.success) {
-                        callback?.invoke(Exception(responseModel.errorMessage))
-                    }
+                val responseModel = when (itemsActionType) {
+                    ItemsActionType.INSERT -> insertItemsApi(listOf(*item))
+                    ItemsActionType.DELETE -> deleteItemsApi(listOf(*item))
+                }
+                if (!responseModel.success) {
+                    callback?.invoke(Exception(responseModel.errorMessage))
+                }
 
-                    when (itemsActionType) {
-                        ItemsActionType.INSERT -> dataSource.onItemsInserted(responseModel.success, listOf(*item))
-                        ItemsActionType.DELETE -> dataSource.onItemsDeleted(responseModel.success, listOf(*item))
-                    }
+                when (itemsActionType) {
+                    ItemsActionType.INSERT -> dataSource.onItemsInserted(responseModel.success, listOf(*item))
+                    ItemsActionType.DELETE -> dataSource.onItemsDeleted(responseModel.success, listOf(*item))
                 }
                 callback?.invoke()
 
