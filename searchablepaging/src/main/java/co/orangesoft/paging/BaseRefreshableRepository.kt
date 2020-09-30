@@ -266,7 +266,9 @@ abstract class BaseRefreshableRepository<DB>(
      *
      * @return response model from server request with success flag and error message
      */
-    protected abstract suspend fun insertItemsApi(items: Collection<DB>): ResponseModel
+    protected open suspend fun insertItemsApi(items: Collection<DB>): ResponseModel {
+        return ResponseModel(false)
+    }
 
     /**
      * In this method do your delete items request to backend
@@ -274,7 +276,9 @@ abstract class BaseRefreshableRepository<DB>(
      *
      * @return response model from server request with success flag and error message
      */
-    protected abstract suspend fun deleteItemsApi(items: Collection<DB>): ResponseModel
+    protected open suspend fun deleteItemsApi(items: Collection<DB>): ResponseModel {
+        return ResponseModel(false)
+    }
 
     private class InvalidQueryKeyException(message: String) : Exception(message)
 
