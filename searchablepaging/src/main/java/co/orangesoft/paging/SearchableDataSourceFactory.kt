@@ -11,7 +11,7 @@ import kotlin.collections.HashMap
  *
  * @param dao - dao, which implement SearchableDao
  */
-abstract class SearchableDataSourceFactory<DB>(private val dao: SearchableDao<DB>) : DataSource.Factory<Int, DB>() {
+abstract class SearchableDataSourceFactory<DB, API>(private val dao: SearchableDao<DB>) : DataSource.Factory<Int, DB>() {
 
     private val mutableLiveData: MutableLiveData<DataSource<Int, DB>> = MutableLiveData()
     private var params: HashMap<String, List<Any>> = hashMapOf()
@@ -107,7 +107,7 @@ abstract class SearchableDataSourceFactory<DB>(private val dao: SearchableDao<DB
      *
      * @return boolean value for success or failure result
      */
-    abstract suspend fun onDataLoaded(result: List<DB>, force: Boolean)
+    abstract suspend fun onDataLoaded(result: List<API>, force: Boolean)
 
     /**
      * Do your stuff with items which was inserted on backend. For instance, insert these items into database
@@ -115,7 +115,7 @@ abstract class SearchableDataSourceFactory<DB>(private val dao: SearchableDao<DB
      * @param insertedItems - list of inserted items
      */
     @Throws(SQLException::class)
-    open suspend fun onItemsInserted(success: Boolean, insertedItems: Collection<DB>) { }
+    open suspend fun onItemsInserted(success: Boolean, insertedItems: Collection<API>) { }
 
     /**
      * Do your stuff with items which was deleted on backend. For instance, remove these items from database
@@ -123,5 +123,5 @@ abstract class SearchableDataSourceFactory<DB>(private val dao: SearchableDao<DB
      * @param deletedItems - list of deleted items
      */
     @Throws(SQLException::class)
-    open suspend fun onItemsDeleted(success: Boolean, deletedItems: Collection<DB>) { }
+    open suspend fun onItemsDeleted(success: Boolean, deletedItems: Collection<API>) { }
 }

@@ -10,8 +10,8 @@ import kotlinx.coroutines.Job
 import retrofit2.Response
 import java.lang.StringBuilder
 
-class UserListRepository(private val apiService: ApiService, factory: SearchableDataSourceFactory<User>, parentJob: Job? = null)
-    : BaseRefreshableRepository<User>(factory, parentJob = parentJob, PAGE_SIZE = 10) {
+class UserListRepository(private val apiService: ApiService, factory: SearchableDataSourceFactory<User, User>, parentJob: Job? = null)
+    : BaseRefreshableRepository<User, User>(factory, parentJob = parentJob, PAGE_SIZE = 10) {
 
     override fun validateQueryKey(key: String): Boolean {
         return when(key) {

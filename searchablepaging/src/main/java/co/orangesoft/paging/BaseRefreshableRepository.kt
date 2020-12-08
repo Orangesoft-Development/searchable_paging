@@ -21,8 +21,8 @@ import kotlin.coroutines.CoroutineContext
  * @param INITIAL_PAGE - declare it to use custom first page, otherwise default value
  * @param PAGE - declare it to use custom current page, otherwise default value
  */
-abstract class BaseRefreshableRepository<DB>(
-    protected var dataSource: SearchableDataSourceFactory<DB>,
+abstract class BaseRefreshableRepository<DB, API>(
+    protected var dataSource: SearchableDataSourceFactory<DB, API>,
     protected val parentJob: Job? = null,
     protected open val PAGE_SIZE: Int = DEFAULT_PAGE_SIZE,
     protected open val DISTANCE: Int = DEFAULT_DISTANCE,
@@ -133,7 +133,7 @@ abstract class BaseRefreshableRepository<DB>(
      * @param item - array of items, which will be inserted
      * @param callback - transaction callback during insert items process
      */
-    fun insertItems(vararg item: DB, callback: TransactionCallback? = null) {
+    fun insertItems(vararg item: API, callback: TransactionCallback? = null) {
         itemsAction(ItemsActionType.INSERT, *item, callback = callback)
     }
 
@@ -142,12 +142,12 @@ abstract class BaseRefreshableRepository<DB>(
      * @param item - array of items, which will be removed
      * @param callback - transaction callback during delete items process
      */
-    fun deleteItems(vararg item: DB, callback: TransactionCallback? = null) {
+    fun deleteItems(vararg item: API, callback: TransactionCallback? = null) {
         itemsAction(ItemsActionType.DELETE, *item, callback = callback)
     }
 
     private fun itemsAction(itemsActionType: ItemsActionType,
-                            vararg item: DB,
+                            vararg item: API,
                             callback: TransactionCallback? = null) {
         launch {
             try {
@@ -258,7 +258,7 @@ abstract class BaseRefreshableRepository<DB>(
      *
      * @return response from server request
      */
-    protected abstract suspend fun loadData(page: Int, limit: Int, params: Map<String, List<Any>>): List<DB>
+    protected abstract suspend fun loadData(page: Int, limit: Int, params: Map<String, List<Any>>): List<API>
 
     /**
      * In this method do your insert items request to backend
@@ -266,7 +266,7 @@ abstract class BaseRefreshableRepository<DB>(
      *
      * @return response model from server request with success flag and error message
      */
-    protected open suspend fun insertItemsApi(items: Collection<DB>): ResponseModel {
+    protected open suspend fun insertItemsApi(items: Collection<API>): ResponseModel {
         return ResponseModel(false)
     }
 
@@ -276,7 +276,7 @@ abstract class BaseRefreshableRepository<DB>(
      *
      * @return response model from server request with success flag and error message
      */
-    protected open suspend fun deleteItemsApi(items: Collection<DB>): ResponseModel {
+    protected open suspend fun deleteItemsApi(items: Collection<API>): ResponseModel {
         return ResponseModel(false)
     }
 

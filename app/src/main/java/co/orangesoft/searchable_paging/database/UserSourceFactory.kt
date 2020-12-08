@@ -5,7 +5,7 @@ import co.orangesoft.paging.SearchableDao
 import co.orangesoft.paging.SearchableDataSourceFactory
 import co.orangesoft.searchable_paging.models.User
 
-class UserSourceFactory(private val dao: UserDao) : SearchableDataSourceFactory<User>(dao) {
+class UserSourceFactory(private val dao: UserDao) : SearchableDataSourceFactory<User, User>(dao) {
 
     companion object {
         const val KEY_LOGIN = "login"
