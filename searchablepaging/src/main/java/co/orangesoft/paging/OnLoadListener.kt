@@ -6,15 +6,15 @@ import kotlin.coroutines.CoroutineContext
 
 class OnLoadListener(private val coroutineContext: CoroutineContext = Dispatchers.Main) {
 
-    private var onStart: (() -> Unit)? = null
-    private var onFinish: (() -> Unit)? = null
+    private var onStart: ((currentPage: Int) -> Unit)? = null
+    private var onFinish: ((currentPage: Int, loadedItemsSize: Int) -> Unit)? = null
     private var onError: ((Throwable) -> Unit)? = null
 
-    fun onStartLoad(listener: () -> Unit) {
+    fun onStartLoad(listener: (currentPage: Int) -> Unit) {
         onStart = listener
     }
 
-    fun onFinishLoad(listener: () -> Unit) {
+    fun onFinishLoad(listener: (currentPage: Int, loadedItemsSize: Int) -> Unit) {
         onFinish = listener
     }
 
@@ -29,12 +29,12 @@ class OnLoadListener(private val coroutineContext: CoroutineContext = Dispatcher
         }
     }
 
-    operator fun invoke(isFinish: Boolean = false) {
+    operator fun invoke(currentPage: Int, loadedItemsSize: Int = 0, isFinish: Boolean = false) {
         runBlocking(coroutineContext) {
             if (isFinish) {
-                onFinish?.invoke()
+                onFinish?.invoke(currentPage, loadedItemsSize)
             } else {
-                onStart?.invoke()
+                onStart?.invoke(currentPage)
             }
         }
     }

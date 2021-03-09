@@ -47,7 +47,7 @@ class MainActivity : AppCompatActivity() {
         onStartLoad {
             //Do your stuff before load
         }
-        onFinishLoad {
+        onFinishLoad { _, _ ->
             //Do your stuff after load
         }
         onErrorLoad {
