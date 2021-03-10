@@ -14,7 +14,7 @@ class OnLoadListener(private val coroutineContext: CoroutineContext = Dispatcher
         onStart = listener
     }
 
-    fun onFinishLoad(listener: (currentPage: Int, loadedItemsSize: Int) -> Unit) {
+    fun onFinishLoad(listener: (currentPage: Int, count: Int) -> Unit) {
         onFinish = listener
     }
 
@@ -29,13 +29,15 @@ class OnLoadListener(private val coroutineContext: CoroutineContext = Dispatcher
         }
     }
 
-    operator fun invoke(currentPage: Int, loadedItemsSize: Int = 0, isFinish: Boolean = false) {
+    operator fun invoke(currentPage: Int) {
         runBlocking(coroutineContext) {
-            if (isFinish) {
-                onFinish?.invoke(currentPage, loadedItemsSize)
-            } else {
-                onStart?.invoke(currentPage)
-            }
+            onStart?.invoke(currentPage)
+        }
+    }
+
+    operator fun invoke(currentPage: Int, count: Int) {
+        runBlocking(coroutineContext) {
+            onFinish?.invoke(currentPage, count)
         }
     }
 }
