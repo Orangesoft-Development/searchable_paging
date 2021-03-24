@@ -119,10 +119,10 @@ abstract class BaseRefreshableRepository<DB, API>(
         loadListener?.get()?.invoke(currentPage)
 
         try {
-            val result = loadData(PAGE, PAGE_SIZE, dataSource.getQueries())
+            val result = loadData(currentPage, PAGE_SIZE, dataSource.getQueries())
             if (result.isNotEmpty()) {
                 dataSource.onDataLoaded(result, force)
-                PAGE++
+                PAGE = currentPage + 1
             }
 
             loadListener?.get()?.invoke(currentPage, result.size)
